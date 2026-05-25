@@ -3,13 +3,6 @@ import io
 import traceback
 import pennylane as qml
 
-def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
-    allowed = {"pennylane", "qml", "math", "numpy", "random"}
-    root = name.split(".")[0]
-    if root in allowed:
-        return __import__(name, globals, locals, fromlist, level)
-    raise ImportError(f"Import of module '{name}' is not allowed in the sandbox")
-
 app_ui = ui.page_fluid(
     ui.div(
         ui.h2(
@@ -47,6 +40,12 @@ app_ui = ui.page_fluid(
     ),
 )
 
+def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
+    allowed = {"pennylane", "qml", "math", "numpy", "random"}
+    root = name.split(".")[0]
+    if root in allowed:
+        return __import__(name, globals, locals, fromlist, level)
+    raise ImportError(f"Import of module '{name}' is not allowed in the sandbox")
 
 def safe_execute(code: str) -> str:
     """Run user code in a restricted environment and return captured output."""
