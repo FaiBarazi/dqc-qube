@@ -31,10 +31,10 @@ def test_predictor(circuit: QuantumCircuit)->tuple[QuantumCircuit, dict, str]:
 def main():
     qasm_path = "openqasm_examples/full_adder_alg_4.qasm"
     circuit = qasm3.load(qasm_path)
+    print("--- Testing Benchmarks ---")
     test_benchmarks(circuit)
+    print("--- Testing Predictor ---")
     test_predictor(circuit)
-
-
 
 if __name__ == "__main__":
     main()
