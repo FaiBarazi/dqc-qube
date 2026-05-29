@@ -7,6 +7,7 @@ requires-python = ">=3.14"
 dependencies = [
     "pennylane>=0.45.0",
     "plotly>=6.7.0",
+    "pytest>=9.0.3",
     "qiskit>=2.4.1",
     "shiny>=1.6.2",
     "shinywidgets>=0.8.1",
