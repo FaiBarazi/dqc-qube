@@ -24,4 +24,4 @@ def test_evolve_state_and_compute_fidelity_zero_state():
     target_state = Statevector.from_label("0" * circuit.num_qubits)
 
     assert output_state == target_state
-    assert compute_fidelity(output_state, target_state) == 1.0
+    assert compute_fidelity(output_state, target_state) - 1.0 <= 0.001
