@@ -12,3 +12,6 @@ dependencies = [
     "shiny>=1.6.2",
     "shinywidgets>=0.8.1",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
