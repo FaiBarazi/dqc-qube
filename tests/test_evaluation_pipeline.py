@@ -3,25 +3,21 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 from pipeline.evaluation_pipeline import compute_fidelity, evolve_state, load_circuit
 
+current_dir = Path(__file__).parent
+
 
 def test_pipeline():
-    qasm_path = (
-        Path(__file__).resolve().parents[1] / "pipeline" / "full_adder_alg_4.qasm"
-    )
-   
+    qasm_path = current_dir / "openqasm_circuits" / "full_adder_alg_4.qasm"
+
     adder_circuit = load_circuit(str(qasm_path))
-    assert circuit.num_qubits == 4
-    assert circuit.num_clbits == 4
-    
-    circuit = QuantumCircuit(circuit.num_qubits, circuit.num_clbits)
-     # Compose the full adder circuit with the input state |0110>
+    assert adder_circuit.num_qubits == 4
+    assert adder_circuit.num_clbits == 4
+
+    circuit = QuantumCircuit(adder_circuit.num_qubits, adder_circuit.num_clbits)
+    # Compose the full adder circuit with the input state |0110>
     circuit.x(1)
     circuit.x(2)
     circuit.compose(adder_circuit, inplace=True)
-   
-    
-    assert len(circuit.data) == 2
-    assert circuit.data[0].operation.name == "FullAdder"
 
     output_state = evolve_state(circuit)
     # Target state is |1010> after applying the full adder circuit to the input state |1010>.
