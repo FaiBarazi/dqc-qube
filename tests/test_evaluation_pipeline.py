@@ -8,12 +8,13 @@ def test_pipeline():
     qasm_path = (
         Path(__file__).resolve().parents[1] / "pipeline" / "full_adder_alg_4.qasm"
     )
-    # Compose the full adder circuit with the input state |1010>
+   
     adder_circuit = load_circuit(str(qasm_path))
     assert circuit.num_qubits == 4
     assert circuit.num_clbits == 4
     
     circuit = QuantumCircuit(circuit.num_qubits, circuit.num_clbits)
+     # Compose the full adder circuit with the input state |0110>
     circuit.x(1)
     circuit.x(2)
     circuit.compose(adder_circuit, inplace=True)
