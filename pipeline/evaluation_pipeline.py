@@ -1,8 +1,3 @@
-"""
-Note:
-This module is intended for testing the benchmarking and predictor
-provided by MQT.
-"""
 
 from qiskit import QuantumCircuit, qasm3
 from qiskit.quantum_info import Statevector, state_fidelity
