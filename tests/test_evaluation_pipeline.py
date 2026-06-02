@@ -64,6 +64,30 @@ def test_deutsch_josza_pipeline():
     assert compute_fidelity(output_state, target_state) - 1.0 <= 0.01
 
 
+def test_qft_pipeline():
+    qasm_path = current_dir / "openqasm_circuits" / "qft_alg_5.qasm"
+
+    qft_circuit = load_circuit(str(qasm_path))
+    assert qft_circuit.num_qubits == 5
+    output_state = evolve_state(qft_circuit)
+
+    # |01101>, big endian. Qiskit uses small endian,  that is |q4 q3 q2 q1 q0> = |10110>. 
+    circuit = QuantumCircuit(qft_circuit.num_qubits, qft_circuit.num_clbits)
+    # Compose the full adder circuit with the input state |0110>
+    for i in [0,2,3]:
+        circuit.x(i)
+    circuit.compose(qft_circuit, inplace=True)
+    output_state = evolve_state(circuit)
+
+    n_qubits = qft_circuit.num_qubits
+    num_basis_states = 2**n_qubits 
+    j = 13 # state |01101>
+    k = np.arange(num_basis_states)
+
+    # Compare the result against a methatmically calculated equivalent target state. 
+    target_state = (1 / np.sqrt(num_basis_states)) * np.exp(2j * np.pi * j * k / num_basis_states)
+    assert compute_fidelity(output_state, target_state) - 1.0 <= 0.01
+
 
 
 
