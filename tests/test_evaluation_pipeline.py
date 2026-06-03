@@ -1,5 +1,6 @@
 from pathlib import Path
 import numpy as np
+from vqe_h2 import run_gradient_optimizer
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 from pipeline.evaluation_pipeline import compute_fidelity, evolve_state, load_circuit
@@ -61,7 +62,7 @@ def test_deutsch_josza_pipeline():
     target_state = target_state / np.linalg.norm(target_state)
     print("Fidelity is:", compute_fidelity(output_state, target_state))
 
-    assert compute_fidelity(output_state, target_state) - 1.0 <= 0.01
+    assert abs(1.0 - compute_fidelity(output_state, target_state)) <= 0.01
 
 
 def test_qft_pipeline():
@@ -86,7 +87,21 @@ def test_qft_pipeline():
 
     # Compare the result against a methatmically calculated equivalent target state. 
     target_state = (1 / np.sqrt(num_basis_states)) * np.exp(2j * np.pi * j * k / num_basis_states)
-    assert compute_fidelity(output_state, target_state) - 1.0 <= 0.01
+    assert  abs(1.0 - compute_fidelity(output_state, target_state)) <= 0.01
+
+# This test is not necessarily useful. In an actual senario, in the case of 
+# heuristic, one way to check could be to check the result agains a known measurable value. 
+# In opitmization problems, were answers are not known, normally these are in the contest 
+# style such as Kaggle ..etc.
+def test_h2_vqe(energy_threshold= 0.01):
+    """
+    Test the result of an optimization against a calculated value. This example a ground state.
+    Note that VQE is a heuristic algorithm and the result can 
+    vary based on the optimizer, the number of steps, and the initial parameters.
+    """
+    # H2 molecule has an estimated ground state energy of −1.13619 Ha 
+    h2_energy = -1.13619
+    assert (run_gradient_optimizer() - h2_energy) <= energy_threshold
 
 
 
