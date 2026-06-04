@@ -4,6 +4,14 @@ import traceback
 import pennylane as qml
 
 app_ui = ui.page_fluid(
+    ui.head_content(
+        # CodeMirror CSS
+        ui.tags.link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css"),
+        ui.tags.link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/eclipse.min.css"),
+        # CodeMirror JS
+        ui.tags.script(src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"),
+        ui.tags.script(src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"),
+    ),
     ui.div(
         ui.h2(
             "Qube - Quantum Leetcode",
@@ -19,12 +27,14 @@ app_ui = ui.page_fluid(
                 ui.p(
                     "Paste your Python code below and click Run to execute it on the backend."
                 ),
-                ui.input_text_area(
-                    "user_code",
-                    "Python code",
-                    value="print('Hello Qube!')\n",
-                    rows=20,
+                ui.HTML(
+                    '<textarea id="user_code" style="display: none;">print(\'Hello Qube!\')\n</textarea>'
                 ),
+                ui.div(
+                    id="code_editor_container",
+                    style="border: 1px solid #ccc; border-radius: 4px; height: 400px; margin-bottom: 15px; background: white;"
+                ),
+                ui.output_ui("_init_editor"),
                 ui.input_action_button("run_code", "Run code", class_="btn-primary"),
                 style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: #f9f9f9;",
             ),
@@ -90,9 +100,59 @@ def safe_execute(code: str) -> str:
 
 
 def server(input, output, session):
+    # Initialize the CodeMirror editor
+    @output
+    @render.ui
+    def _init_editor():
+        return ui.HTML(
+            """
+            <script>
+            (function() {
+                const textarea = document.getElementById('user_code');
+                const editor = CodeMirror(document.getElementById('code_editor_container'), {
+                    value: textarea.value,
+                    mode: 'python',
+                    theme: 'eclipse',
+                    lineNumbers: true,
+                    lineWrapping: true,
+                    indentUnit: 4,
+                    indentWithTabs: false,
+                    tabSize: 4,
+                    autoIndent: true,
+                    matchBrackets: true,
+                    highlightSelectionMatches: { showToken: /\\w/, annotateScrollbar: true },
+                    styleActiveLine: true,
+                    styleActiveSelected: true,
+                    extraKeys: {
+                        'Tab': function(cm) {
+                            if (cm.somethingSelected()) {
+                                cm.indentSelection('add');
+                            } else {
+                                cm.replaceSelection('    ', 'end');
+                            }
+                        },
+                        'Shift-Tab': function(cm) {
+                            cm.indentSelection('subtract');
+                        }
+                    }
+                });
+                
+                // Sync editor content to hidden textarea
+                editor.on('change', function() {
+                    textarea.value = editor.getValue();
+                    Shiny.setInputValue('user_code', editor.getValue());
+                });
+                
+                // Store editor globally for server access
+                window.codeEditor = editor;
+            })();
+            </script>
+            """
+        )
+
     @reactive.event(input.run_code)
     def submitted_code():
-        return input.user_code()
+        return input.user_code() if input.user_code() else ""
 
     @output
     @render.text
