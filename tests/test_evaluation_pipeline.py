@@ -102,7 +102,3 @@ def test_h2_vqe(energy_threshold= 0.01):
     # H2 molecule has an estimated ground state energy of −1.13619 Ha 
     h2_energy = -1.13619
     assert (run_gradient_optimizer() - h2_energy) <= energy_threshold
-
-
-
-
