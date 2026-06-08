@@ -1,0 +1,11 @@
+{
+  "id": "bell_state",
+  "title": "Bell State Preparation",
+  "difficulty": "easy",
+  "framework": "qiskit",
+  "qubits": 2,
+  "fidelity_threshold": 0.999,
+  "allowed_gates": ["h", "cx"],
+  "tags": ["state-preparation", "entanglement"]
+}
+
