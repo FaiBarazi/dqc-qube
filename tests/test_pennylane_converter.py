@@ -1,4 +1,4 @@
-import pennylane as qml
+import pennylane as pq
 import pytest
 
 from pipeline.converters.pennylane_converter import (
@@ -14,13 +14,13 @@ from pipeline.converters.pennylane_converter import (
 
 
 def make_bell_qnode():
-    dev = qml.device("default.qubit", wires=2)
+    dev = pq.device("default.qubit", wires=2)
 
-    @qml.qnode(dev)
+    @pq.qnode(dev)
     def circuit():
-        qml.Hadamard(wires=0)
-        qml.CNOT(wires=[0, 1])
-        return qml.probs(wires=[0, 1])
+        pq.Hadamard(wires=0)
+        pq.CNOT(wires=[0, 1])
+        return pq.probs(wires=[0, 1])
 
     return circuit
 
@@ -57,17 +57,17 @@ def test_export_pennylane_to_qasm3_writes_file(tmp_path):
 
 def test_pennylane_source_to_circuit_accepts_qnode_factory():
     source = """
-import pennylane as qml
+import pennylane as pq
 
 
 def solve():
-    dev = qml.device("default.qubit", wires=2)
+    dev = pq.device("default.qubit", wires=2)
 
-    @qml.qnode(dev)
+    @pq.qnode(dev)
     def circuit():
-        qml.Hadamard(wires=0)
-        qml.CNOT(wires=[0, 1])
-        return qml.probs(wires=[0, 1])
+        pq.Hadamard(wires=0)
+        pq.CNOT(wires=[0, 1])
+        return pq.probs(wires=[0, 1])
 
     return circuit
 """
@@ -79,16 +79,16 @@ def solve():
 
 def test_pennylane_source_to_qasm2_returns_circuit_and_qasm():
     source = """
-import pennylane as qml
+import pennylane as pq
 
 
 def solve():
-    dev = qml.device("default.qubit", wires=1)
+    dev = pq.device("default.qubit", wires=1)
 
-    @qml.qnode(dev)
+    @pq.qnode(dev)
     def circuit():
-        qml.PauliX(wires=0)
-        return qml.probs(wires=0)
+        pq.PauliX(wires=0)
+        return pq.probs(wires=0)
 
     return circuit
 """
@@ -102,16 +102,16 @@ def solve():
 
 def test_pennylane_source_to_qasm3_returns_circuit_and_qasm():
     source = """
-import pennylane as qml
+import pennylane as pq
 
 
-dev = qml.device("default.qubit", wires=1)
+dev = pq.device("default.qubit", wires=1)
 
 
-@qml.qnode(dev)
+@pq.qnode(dev)
 def solve():
-    qml.PauliX(wires=0)
-    return qml.probs(wires=0)
+    pq.PauliX(wires=0)
+    return pq.probs(wires=0)
 """
 
     result = pennylane_source_to_qasm3(source)
