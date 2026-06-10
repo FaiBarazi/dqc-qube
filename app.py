@@ -1,7 +1,7 @@
 from shiny import App, ui, render, reactive
 import io
 import traceback
-import pennylane as qml
+import pennylane as pq
 
 app_ui = ui.page_fluid(
     ui.div(
@@ -41,7 +41,7 @@ app_ui = ui.page_fluid(
 )
 
 def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
-    allowed = {"pennylane", "qml", "math", "numpy", "random"}
+    allowed = {"pennylane", "pq", "math", "numpy", "random"}
     root = name.split(".")[0]
     if root in allowed:
         return __import__(name, globals, locals, fromlist, level)
@@ -51,7 +51,7 @@ def safe_execute(code: str) -> str:
     """Run user code in a restricted environment and return captured output."""
     output_buffer = io.StringIO()
     def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
-        allowed = {"pennylane", "qml", "math", "numpy", "random"}
+        allowed = {"pennylane", "pq", "math", "numpy", "random"}
         root = name.split(".")[0]
         if root in allowed:
             return __import__(name, globals, locals, fromlist, level)
@@ -79,7 +79,7 @@ def safe_execute(code: str) -> str:
         "print": lambda *args, **kwargs: print(*args, **kwargs, file=output_buffer),
         "__import__": _safe_import,
     }
-    namespace = {"__builtins__": safe_builtins, "qml": qml, "pennylane": qml}
+    namespace = {"__builtins__": safe_builtins, "pq": pq, "pennylane": pq}
 
     try:
         exec(code, namespace)

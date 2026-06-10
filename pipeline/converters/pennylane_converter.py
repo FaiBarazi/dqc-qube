@@ -5,7 +5,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Optional, Sequence, Union
 
-import pennylane as qml
+import pennylane as pq
 from pennylane.tape import QuantumScript
 from pennylane.workflow import QNode
 from qiskit import QuantumCircuit
@@ -84,7 +84,7 @@ def pennylane_to_qasm2(
     circuit_kwargs = circuit_kwargs or {}
 
     try:
-        qasm_export = qml.to_openqasm(
+        qasm_export = pq.to_openqasm(
             circuit,
             wires=wires,
             rotations=rotations,
@@ -292,7 +292,7 @@ def _build_execution_namespace() -> dict[str, Any]:
     return {
         "__builtins__": safe_builtins,
         "__name__": "__pennylane_submission__",
-        "pennylane": qml,
-        "qml": qml,
+        "pennylane": pq,
+        "pq": pq,
     }
 
