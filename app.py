@@ -70,7 +70,6 @@ app_ui = ui.page_fluid(
         ui.column(
             6,
             ui.div(
-                ui.h3("Problem Description"),
                 ui.output_ui("problem_description"),
                 style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: white; min-height: 300px; max-height: 400px; overflow-y: auto;",
             ),
