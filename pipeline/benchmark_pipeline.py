@@ -1,4 +1,6 @@
 from qiskit import QuantumCircuit
+from mqt.bench.benchmarks import get_benchmark_catalog
+
 def get_alg_benchmark(circuit: QuantumCircuit)->dict:
     """
     Return stats for a circuit on the algorithm level. 
@@ -26,3 +28,6 @@ def get_alg_benchmark(circuit: QuantumCircuit)->dict:
         "num_single_gates": single_q,
         "controlled_gates": ctrl_q,
     }
+
+def get_mqt_catalog()-> dict:
+    return get_benchmark_catalog()
