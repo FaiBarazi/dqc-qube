@@ -2,6 +2,37 @@ from shiny import App, ui, render, reactive
 import io
 import traceback
 import pennylane as pq
+import os
+from pathlib import Path
+
+
+def get_problems():
+    """Discover available problems from the problems directory."""
+    problems_dir = Path(__file__).parent / "problems"
+    if not problems_dir.exists():
+        return []
+    
+    problems = []
+    for problem_dir in sorted(problems_dir.iterdir()):
+        if problem_dir.is_dir() and (problem_dir / "problem.md").exists():
+            problems.append(problem_dir.name)
+    return problems
+
+
+def get_problem_description(problem_name: str) -> str:
+    """Load the problem description from problem.md."""
+    problem_path = Path(__file__).parent / "problems" / problem_name / "problem.md"
+    if problem_path.exists():
+        return problem_path.read_text()
+    return "Problem description not found."
+
+
+def get_starter_code(problem_name: str) -> str:
+    """Load the starter code from starter.py."""
+    starter_path = Path(__file__).parent / "problems" / problem_name / "starter.py"
+    if starter_path.exists():
+        return starter_path.read_text()
+    return "# Starter code not found"
 
 app_ui = ui.page_fluid(
     ui.head_content(
@@ -21,14 +52,47 @@ app_ui = ui.page_fluid(
     ),
     ui.row(
         ui.column(
+            12,
+            ui.div(
+                ui.h3("Select Problem"),
+                ui.input_select(
+                    "problem_selector",
+                    "Choose a problem:",
+                    {p: p for p in get_problems()},
+                    selected=get_problems()[0] if get_problems() else None,
+                ),
+                style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: #f9f9f9; margin-bottom: 20px;",
+            ),
+        ),
+    ),
+    ui.row(
+        ui.column(
             6,
+            ui.div(
+                ui.h3("Problem Description"),
+                ui.output_text_verbatim("problem_description"),
+                style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: #f3f6ff; min-height: 300px; max-height: 400px; overflow-y: auto; white-space: pre-wrap;",
+            ),
+        ),
+        ui.column(
+            6,
+            ui.div(
+                ui.h3("Execution result"),
+                ui.output_text_verbatim("code_output"),
+                style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: #f3f6ff; min-height: 300px; max-height: 400px; overflow-y: auto; white-space: pre-wrap;",
+            ),
+        ),
+    ),
+    ui.row(
+        ui.column(
+            12,
             ui.div(
                 ui.h3("Code editor"),
                 ui.p(
                     "Paste your Python code below and click Run to execute it on the backend."
                 ),
                 ui.HTML(
-                    '<textarea id="user_code" style="display: none;">print(\'Hello Qube!\')\n</textarea>'
+                    '<textarea id="user_code" style="display: none;"></textarea>'
                 ),
                 ui.div(
                     id="code_editor_container",
@@ -37,14 +101,6 @@ app_ui = ui.page_fluid(
                 ui.output_ui("_init_editor"),
                 ui.input_action_button("run_code", "Run code", class_="btn-primary"),
                 style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: #f9f9f9;",
-            ),
-        ),
-        ui.column(
-            6,
-            ui.div(
-                ui.h3("Execution result"),
-                ui.output_text_verbatim("code_output"),
-                style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: #f3f6ff; min-height: 400px; white-space: pre-wrap;",
             ),
         ),
     ),
@@ -100,52 +156,78 @@ def safe_execute(code: str) -> str:
 
 
 def server(input, output, session):
+    # Get the current problem
+    @reactive.calc
+    def current_problem():
+        return input.problem_selector()
+    
+    # Display the problem description
+    @output
+    @render.text
+    def problem_description():
+        return get_problem_description(current_problem())
+    
+    # Get starter code for the current problem
+    @reactive.calc
+    def starter_code():
+        return get_starter_code(current_problem())
+    
     # Initialize the CodeMirror editor
     @output
     @render.ui
     def _init_editor():
+        code = starter_code()
+        # Escape the code properly for JavaScript
+        escaped_code = code.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
         return ui.HTML(
-            """
+            f"""
             <script>
-            (function() {
+            (function() {{
                 const textarea = document.getElementById('user_code');
-                const editor = CodeMirror(document.getElementById('code_editor_container'), {
-                    value: textarea.value,
-                    mode: 'python',
-                    theme: 'eclipse',
-                    lineNumbers: true,
-                    lineWrapping: true,
-                    indentUnit: 4,
-                    indentWithTabs: false,
-                    tabSize: 4,
-                    autoIndent: true,
-                    matchBrackets: true,
-                    highlightSelectionMatches: { showToken: /\\w/, annotateScrollbar: true },
-                    styleActiveLine: true,
-                    styleActiveSelected: true,
-                    extraKeys: {
-                        'Tab': function(cm) {
-                            if (cm.somethingSelected()) {
-                                cm.indentSelection('add');
-                            } else {
-                                cm.replaceSelection('    ', 'end');
-                            }
-                        },
-                        'Shift-Tab': function(cm) {
-                            cm.indentSelection('subtract');
-                        }
-                    }
-                });
-                
-                // Sync editor content to hidden textarea
-                editor.on('change', function() {
-                    textarea.value = editor.getValue();
-                    Shiny.setInputValue('user_code', editor.getValue());
-                });
-                
-                // Store editor globally for server access
-                window.codeEditor = editor;
-            })();
+                // Check if editor already exists
+                if (window.codeEditor) {{
+                    // Update existing editor
+                    window.codeEditor.setValue({repr(code)});
+                }} else {{
+                    // Create new editor
+                    const editor = CodeMirror(document.getElementById('code_editor_container'), {{
+                        value: {repr(code)},
+                        mode: 'python',
+                        theme: 'eclipse',
+                        lineNumbers: true,
+                        lineWrapping: true,
+                        indentUnit: 4,
+                        indentWithTabs: false,
+                        tabSize: 4,
+                        autoIndent: true,
+                        matchBrackets: true,
+                        highlightSelectionMatches: {{ showToken: /\\w/, annotateScrollbar: true }},
+                        styleActiveLine: true,
+                        styleActiveSelected: true,
+                        extraKeys: {{
+                            'Tab': function(cm) {{
+                                if (cm.somethingSelected()) {{
+                                    cm.indentSelection('add');
+                                }} else {{
+                                    cm.replaceSelection('    ', 'end');
+                                }}
+                            }},
+                            'Shift-Tab': function(cm) {{
+                                cm.indentSelection('subtract');
+                            }}
+                        }}
+                    }});
+                    
+                    // Sync editor content to hidden textarea
+                    editor.on('change', function() {{
+                        textarea.value = editor.getValue();
+                        Shiny.setInputValue('user_code', editor.getValue());
+                    }});
+                    
+                    // Store editor globally for server access
+                    window.codeEditor = editor;
+                }}
+            }})();
             </script>
             """
         )
