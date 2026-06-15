@@ -4,6 +4,7 @@ import traceback
 import pennylane as pq
 import os
 from pathlib import Path
+import markdown
 
 
 def get_problems():
@@ -70,8 +71,8 @@ app_ui = ui.page_fluid(
             6,
             ui.div(
                 ui.h3("Problem Description"),
-                ui.output_text_verbatim("problem_description"),
-                style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: #f3f6ff; min-height: 300px; max-height: 400px; overflow-y: auto; white-space: pre-wrap;",
+                ui.output_ui("problem_description"),
+                style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: white; min-height: 300px; max-height: 400px; overflow-y: auto;",
             ),
         ),
         ui.column(
@@ -161,11 +162,19 @@ def server(input, output, session):
     def current_problem():
         return input.problem_selector()
     
-    # Display the problem description
+    # Display the problem description (rendered as markdown HTML)
     @output
-    @render.text
+    @render.ui
     def problem_description():
-        return get_problem_description(current_problem())
+        md_text = get_problem_description(current_problem())
+        html_content = markdown.markdown(md_text, extensions=['extra', 'codehilite'])
+        # Wrap in styled div with markdown styling
+        styled_html = f"""
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; line-height: 1.6; color: #333;">
+            {html_content}
+        </div>
+        """
+        return ui.HTML(styled_html)
     
     # Get starter code for the current problem
     @reactive.calc
