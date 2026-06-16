@@ -1,10 +1,15 @@
 from shiny import App, ui, render, reactive
 import io
+import importlib
+import sys
 import traceback
 import pennylane as pq
 import os
 from pathlib import Path
 import markdown
+
+from pipeline.converters.qiskit_converter import ConversionError, source_to_circuit
+from pipeline.evaluation_pipeline import compute_fidelity, evolve_state
 
 
 def get_problems():
@@ -34,6 +39,21 @@ def get_starter_code(problem_name: str) -> str:
     if starter_path.exists():
         return starter_path.read_text()
     return "# Starter code not found"
+
+
+def load_problem_tests(problem_name: str):
+    project_root = Path(__file__).parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+
+    module_name = f"problems.{problem_name}.tests"
+    try:
+        return importlib.import_module(module_name)
+    except ModuleNotFoundError:
+        return None
+    except Exception:
+        return None
+
 
 app_ui = ui.page_fluid(
     ui.head_content(
@@ -257,10 +277,50 @@ def server(input, output, session):
         if not code or not code.strip():
             return "Enter Python code in the editor and click Run code."
 
-        result = safe_execute(code)
-        if result.strip() == "":
-            return "Code executed successfully with no output."
-        return result
+        try:
+            circuit = source_to_circuit(code)
+        except ConversionError as exc:
+            return f"ConversionError: {exc}"
+        except Exception:
+            return traceback.format_exc()
+
+        try:
+            output_state = evolve_state(circuit)
+        except Exception as exc:
+            return f"Could not simulate circuit output: {exc}"
+
+        problem_tests = load_problem_tests(current_problem())
+        fidelity_text = "Problem-specific target state not available."
+        validation_text = ""
+
+        if problem_tests is not None and hasattr(problem_tests, "target_state"):
+            try:
+                target_state = problem_tests.target_state()
+                fidelity = compute_fidelity(output_state, target_state)
+                fidelity_text = f"Fidelity: {fidelity:.6f}"
+            except Exception as exc:
+                fidelity_text = f"Could not compute fidelity: {exc}"
+
+        if problem_tests is not None and hasattr(problem_tests, "validate"):
+            try:
+                validation = problem_tests.validate(circuit)
+                validation_text = (
+                    f"\nValidation: {validation.get('message', 'n/a')}"
+                    f"\nPassed: {validation.get('passed', False)}"
+                    f"\nReported fidelity: {validation.get('fidelity', 0.0):.6f}"
+                )
+            except Exception as exc:
+                validation_text = f"\nCould not validate solution: {exc}"
+
+        result_lines = [
+            "Circuit built successfully using source_to_circuit().",
+            f"Qubits: {circuit.num_qubits}, Clbits: {circuit.num_clbits}",
+            fidelity_text,
+        ]
+        if validation_text:
+            result_lines.append(validation_text)
+
+        return "\n".join(result_lines)
 
 
 app = App(app_ui, server)
