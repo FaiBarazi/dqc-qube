@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from types import MappingProxyType
 from typing import Any, Optional, Sequence, Union
 
 import pennylane as pq
@@ -12,6 +11,7 @@ from qiskit import QuantumCircuit
 
 from pipeline.converters.errors import ConversionError
 from pipeline.converters.qiskit_converter import circuit_to_qasm3
+from pipeline.converters.sandbox import SAFE_BUILTINS, ALLOWED_IMPORT_ROOTS
 
 
 PennyLaneCircuit = Union[QNode, QuantumScript]
@@ -24,49 +24,7 @@ class PennyLaneConversionResult:
     qasm_version: str
 
 
-ALLOWED_IMPORT_ROOTS = frozenset({"cmath", "math", "numpy", "pennylane", "random"})
-
-SAFE_BUILTINS = MappingProxyType(
-    {
-        "abs": abs,
-        "all": all,
-        "any": any,
-        "bin": bin,
-        "bool": bool,
-        "chr": chr,
-        "complex": complex,
-        "dict": dict,
-        "divmod": divmod,
-        "enumerate": enumerate,
-        "filter": filter,
-        "float": float,
-        "format": format,
-        "frozenset": frozenset,
-        "int": int,
-        "isinstance": isinstance,
-        "issubclass": issubclass,
-        "len": len,
-        "list": list,
-        "map": map,
-        "max": max,
-        "min": min,
-        "next": next,
-        "object": object,
-        "pow": pow,
-        "range": range,
-        "repr": repr,
-        "reversed": reversed,
-        "round": round,
-        "set": set,
-        "slice": slice,
-        "sorted": sorted,
-        "str": str,
-        "sum": sum,
-        "tuple": tuple,
-        "type": type,
-        "zip": zip,
-    }
-)
+# SAFE_BUILTINS and ALLOWED_IMPORT_ROOTS are provided by pipeline.converters.sandbox
 
 
 def pennylane_to_qasm2(

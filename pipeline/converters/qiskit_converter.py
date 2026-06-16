@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from types import MappingProxyType
 from typing import Any, Union
 
 import qiskit
@@ -10,6 +9,7 @@ from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, qasm3
 from qiskit.circuit import Parameter, ParameterVector
 
 from pipeline.converters.errors import ConversionError
+from pipeline.converters.sandbox import SAFE_BUILTINS, ALLOWED_IMPORT_ROOTS_QISKIT as ALLOWED_IMPORT_ROOTS
 
 
 @dataclass(frozen=True)
@@ -18,49 +18,7 @@ class QiskitConversionResult:
     qasm: str
 
 
-ALLOWED_IMPORT_ROOTS = frozenset({"cmath", "math", "numpy", "qiskit", "random"})
-
-SAFE_BUILTINS = MappingProxyType(
-    {
-        "abs": abs,
-        "all": all,
-        "any": any,
-        "bin": bin,
-        "bool": bool,
-        "chr": chr,
-        "complex": complex,
-        "dict": dict,
-        "divmod": divmod,
-        "enumerate": enumerate,
-        "filter": filter,
-        "float": float,
-        "format": format,
-        "frozenset": frozenset,
-        "int": int,
-        "isinstance": isinstance,
-        "issubclass": issubclass,
-        "len": len,
-        "list": list,
-        "map": map,
-        "max": max,
-        "min": min,
-        "next": next,
-        "object": object,
-        "pow": pow,
-        "range": range,
-        "repr": repr,
-        "reversed": reversed,
-        "round": round,
-        "set": set,
-        "slice": slice,
-        "sorted": sorted,
-        "str": str,
-        "sum": sum,
-        "tuple": tuple,
-        "type": type,
-        "zip": zip,
-    }
-)
+# SAFE_BUILTINS and ALLOWED_IMPORT_ROOTS are provided by pipeline.converters.sandbox
 
 
 def circuit_to_qasm3(circuit: QuantumCircuit) -> str:
