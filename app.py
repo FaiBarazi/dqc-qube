@@ -1,15 +1,19 @@
 from shiny import App, ui, render, reactive
+from shinywidgets import output_widget, render_widget
 import io
 import importlib
+import json
 import sys
 import traceback
 import pennylane as pq
 import os
 from pathlib import Path
 import markdown
+import plotly.graph_objects as go
 
 from pipeline.converters.qiskit_converter import ConversionError, source_to_circuit
 from pipeline.evaluation_pipeline import compute_fidelity, evolve_state
+from pipeline.benchmark_pipeline import benchmark_metrics
 
 
 def get_problems():
@@ -39,6 +43,17 @@ def get_starter_code(problem_name: str) -> str:
     if starter_path.exists():
         return starter_path.read_text()
     return "# Starter code not found"
+
+
+def get_problem_metadata(problem_name: str) -> dict:
+    """Load metadata.json for a problem. Returns empty dict on failure."""
+    meta_path = Path(__file__).parent / "problems" / problem_name / "metadata.json"
+    if meta_path.exists():
+        try:
+            return json.loads(meta_path.read_text())
+        except Exception:
+            return {}
+    return {}
 
 
 def load_problem_tests(problem_name: str):
@@ -73,6 +88,10 @@ app_ui = ui.page_fluid(
             #code_editor_container { border-radius: 4px; background: white; border: 1px solid #ccc; }
             .CodeMirror { background: white !important; color: #333 !important; height: 400px !important; }
             .CodeMirror-cursor { border-left: 2px solid #e74c3c !important; }
+            .benchmark-section { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 24px; }
+            .benchmark-title { font-size: 20px; font-weight: 600; color: #222; margin-bottom: 4px; }
+            .benchmark-subtitle { font-size: 13px; color: #888; margin-bottom: 16px; }
+            .no-mqt-banner { background: #fff8e1; border-left: 4px solid #f9a825; padding: 14px 18px; border-radius: 4px; color: #5d4037; font-size: 14px; }
         """)
     ),
     ui.div(
@@ -127,6 +146,16 @@ app_ui = ui.page_fluid(
                 ),
                 class_="code-section",
                 style="height: 100%; display: flex; flex-direction: column;",
+            ),
+        ),
+    ),
+    # ── MQT Bench comparison ──────────────────────────────────────────────────
+    ui.row(
+        ui.column(
+            12,
+            ui.div(
+                ui.output_ui("benchmark_comparison"),
+                class_="benchmark-section",
             ),
         ),
     ),
@@ -266,9 +295,41 @@ def server(input, output, session):
             """
         )
 
+    @reactive.calc
+    def current_metadata():
+        return get_problem_metadata(current_problem())
+
     @reactive.event(input.run_code)
     def submitted_code():
         return input.user_code() if input.user_code() else ""
+
+    # Reactive that holds the benchmark comparison result (or an error string)
+    # after a successful submission.  None = not yet submitted.
+    _benchmark_result: reactive.Value = reactive.value(None)
+
+    @reactive.effect
+    @reactive.event(input.run_code)
+    def _compute_benchmark():
+        code = input.user_code() if input.user_code() else ""
+        if not code.strip():
+            _benchmark_result.set(None)
+            return
+
+        meta = current_metadata()
+        mqt_key = meta.get("mqt_bench_key", None)
+
+        if mqt_key is None:
+            # No matching MQT Bench circuit (e.g. bell_state)
+            _benchmark_result.set({"no_mqt_key": True})
+            return
+
+        try:
+            circuit = source_to_circuit(code)
+            result = benchmark_metrics(mqt_key, circuit)
+            result["no_mqt_key"] = False
+            _benchmark_result.set(result)
+        except Exception as exc:
+            _benchmark_result.set({"error": str(exc)})
 
     @output
     @render.text
@@ -322,6 +383,109 @@ def server(input, output, session):
 
         return "\n".join(result_lines)
 
+    # ── MQT Bench comparison visual ────────────────────────────────────────
+    @output
+    @render.ui
+    def benchmark_comparison():
+        result = _benchmark_result.get()
 
-app = App(app_ui, server)
+        # Nothing submitted yet
+        if result is None:
+            return ui.div(
+                ui.p(
+                    "Submit a solution to see how your circuit compares against the MQT Bench reference.",
+                    style="color: #aaa; font-style: italic; text-align: center; padding: 20px 0;",
+                )
+            )
+
+        # Problem has no MQT Bench equivalent
+        if result.get("no_mqt_key"):
+            return ui.div(
+                ui.div(
+                    ui.tags.b("MQT Bench comparison not available"),
+                    ui.tags.br(),
+                    "MQT Bench does not have a matching circuit for this problem.",
+                    class_="no-mqt-banner",
+                )
+            )
+
+        # Benchmark computation hit an error
+        if "error" in result:
+            return ui.div(
+                ui.p(
+                    f"Could not compute MQT Bench comparison: {result['error']}",
+                    style="color: #c0392b;",
+                )
+            )
+
+        # Build grouped bar chart
+        metrics_labels = [
+            ("depth",             "Depth"),
+            ("num_single_gates",  "Single-Qubit Gates"),
+            ("controlled_gates",  "Controlled Gates"),
+            ("total_num_gates",   "Total Gates"),
+        ]
+
+        submitted_vals = [result["submitted"][k] for k, _ in metrics_labels]
+        mqt_vals       = [result["mqt_bench"][k]  for k, _ in metrics_labels]
+        x_labels       = [label for _, label in metrics_labels]
+
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            name="Your Circuit",
+            x=x_labels,
+            y=submitted_vals,
+            marker_color="#e74c3c",
+            text=submitted_vals,
+            textposition="outside",
+        ))
+        fig.add_trace(go.Bar(
+            name="MQT Bench",
+            x=x_labels,
+            y=mqt_vals,
+            marker_color="#3498db",
+            text=mqt_vals,
+            textposition="outside",
+        ))
+
+        meta = current_metadata()
+        mqt_key = meta.get("mqt_bench_key", "")
+        problem_title = meta.get("title", current_problem())
+
+        fig.update_layout(
+            barmode="group",
+            title=dict(
+                text=f"Circuit Benchmark: Your Solution vs MQT Bench ({mqt_key})",
+                font=dict(size=16, color="#222"),
+            ),
+            xaxis=dict(title="Metric", tickfont=dict(size=13)),
+            yaxis=dict(title="Count", tickfont=dict(size=13)),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            plot_bgcolor="white",
+            paper_bgcolor="white",
+            margin=dict(t=80, b=40, l=50, r=30),
+            height=380,
+        )
+        fig.update_xaxes(showgrid=False)
+        fig.update_yaxes(showgrid=True, gridcolor="#eee")
+
+        chart_html = fig.to_html(
+            full_html=False,
+            include_plotlyjs="cdn",
+            config={"displayModeBar": False},
+        )
+
+        return ui.div(
+            ui.div(
+                ui.p(
+                    "Comparison against the MQT Bench reference circuit at the algorithm level "
+                    "(no transpilation / gate mapping applied).",
+                    class_="benchmark-subtitle",
+                ),
+            ),
+            ui.HTML(chart_html),
+        )
+
+
+app = App(app_ui, server, static_assets=None)
 
