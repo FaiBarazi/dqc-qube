@@ -43,26 +43,36 @@ app_ui = ui.page_fluid(
         # CodeMirror JS
         ui.tags.script(src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"),
         ui.tags.script(src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"),
+        # Custom styles
+        ui.tags.style("""
+            .red-button { background-color: #e74c3c !important; border-color: #c0392b !important; }
+            .red-button:hover { background-color: #c0392b !important; }
+            .problem-section { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .code-section { background: white; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; border: 1px solid #ddd; }
+            .code-editor-label { color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+            #code_editor_container { border-radius: 4px; background: white; border: 1px solid #ccc; }
+            .CodeMirror { background: white !important; color: #333 !important; height: 400px !important; }
+            .CodeMirror-cursor { border-left: 2px solid #e74c3c !important; }
+        """)
     ),
     ui.div(
-        ui.h2(
-            "Qube - Quantum Leetcode",
-            style="color: white; margin: 0; font-weight: 400;",
+        ui.h1(
+            "Quantum Code Challenge",
+            style="color: black; margin: 0; font-weight: 700; font-size: 48px;",
         ),
-        style="background-color: #363636; padding: 15px 20px; margin-bottom: 20px; border-bottom: 2px solid #444;",
+        style="background-color: white; padding: 30px; margin-bottom: 30px;",
     ),
     ui.row(
         ui.column(
             12,
             ui.div(
-                ui.h3("Select Problem"),
                 ui.input_select(
                     "problem_selector",
-                    "Choose a problem:",
+                    "Select Problem:",
                     {p: p for p in get_problems()},
                     selected=get_problems()[0] if get_problems() else None,
                 ),
-                style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: #f9f9f9; margin-bottom: 20px;",
+                style="margin-bottom: 30px;",
             ),
         ),
     ),
@@ -71,36 +81,32 @@ app_ui = ui.page_fluid(
             6,
             ui.div(
                 ui.output_ui("problem_description"),
-                style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: white; min-height: 300px; max-height: 400px; overflow-y: auto;",
+                class_="problem-section",
+                style="max-height: 600px; overflow-y: auto;",
             ),
         ),
         ui.column(
             6,
             ui.div(
-                ui.h3("Execution result"),
-                ui.output_text_verbatim("code_output"),
-                style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: #f3f6ff; min-height: 300px; max-height: 400px; overflow-y: auto; white-space: pre-wrap;",
-            ),
-        ),
-    ),
-    ui.row(
-        ui.column(
-            12,
-            ui.div(
-                ui.h3("Code editor"),
-                ui.p(
-                    "Paste your Python code below and click Run to execute it on the backend."
+                ui.div(
+                    ui.tags.span("PYTHON - QISKIT", class_="code-editor-label"),
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;",
                 ),
                 ui.HTML(
                     '<textarea id="user_code" style="display: none;"></textarea>'
                 ),
                 ui.div(
                     id="code_editor_container",
-                    style="border: 1px solid #ccc; border-radius: 4px; height: 400px; margin-bottom: 15px; background: white;"
+                    style="flex-grow: 1; margin-bottom: 15px;"
                 ),
                 ui.output_ui("_init_editor"),
-                ui.input_action_button("run_code", "Run code", class_="btn-primary"),
-                style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: #f9f9f9;",
+                ui.input_action_button("run_code", "Submit solution", class_="btn-danger red-button", style="width: 100%; padding: 12px; font-weight: bold; font-size: 16px; border: none;"),
+                ui.div(
+                    ui.output_text_verbatim("code_output"),
+                    style="background: #f5f5f5; padding: 15px; border-radius: 4px; margin-top: 15px; min-height: 100px; font-size: 13px; white-space: pre-wrap; border: 1px solid #ddd;",
+                ),
+                class_="code-section",
+                style="height: 100%; display: flex; flex-direction: column;",
             ),
         ),
     ),
