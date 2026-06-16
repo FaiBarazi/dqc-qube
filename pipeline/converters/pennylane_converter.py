@@ -11,7 +11,11 @@ from qiskit import QuantumCircuit
 
 from pipeline.converters.errors import ConversionError
 from pipeline.converters.qiskit_converter import circuit_to_qasm3
-from pipeline.converters.sandbox import ALLOWED_IMPORT_ROOTS_PENNYLANE as ALLOWED_IMPORT_ROOTS, build_execution_namespace
+from pipeline.converters.sandbox import (
+    ALLOWED_IMPORT_ROOTS_PENNYLANE as ALLOWED_IMPORT_ROOTS,
+    build_execution_namespace,
+    execute_submission_source,
+)
 
 
 PennyLaneCircuit = Union[QNode, QuantumScript]
@@ -161,24 +165,14 @@ def pennylane_source_to_circuit(source: str, function_name: str = "solve") -> Pe
         },
     )
 
-    try:
-        exec(compile(source, "<pennylane-submission>", "exec"), namespace)
-    except Exception as exc:
-        raise ConversionError(f"Could not execute PennyLane source: {exc}") from exc
-
-    submission = namespace.get(function_name)
-    if _is_pennylane_circuit(submission):
-        return submission
-
-    if not callable(submission):
-        raise ConversionError(
-            f"Submission must define `{function_name}` as a PennyLane QNode or circuit factory."
-        )
-
-    try:
-        circuit = submission()
-    except Exception as exc:
-        raise ConversionError(f"`{function_name}` failed while building the PennyLane circuit: {exc}") from exc
+    circuit = execute_submission_source(
+        source=source,
+        function_name=function_name,
+        namespace=namespace,
+        type_validator=lambda value: isinstance(value, (QNode, QuantumScript)),
+        type_error_message="Expected a PennyLane QNode or QuantumScript.",
+        allow_direct_submission=True,
+    )
 
     _ensure_pennylane_circuit(circuit)
     return circuit
