@@ -71,3 +71,34 @@ def build_execution_namespace(
         namespace.update(extra_symbols)
     return namespace
 
+
+def execute_submission_source(
+    source: str,
+    function_name: str,
+    namespace: dict[str, Any],
+    type_validator: callable,
+    type_error_message: str,
+    allow_direct_submission: bool = False,
+) -> Any:
+    try:
+        exec(compile(source, "<submission>", "exec"), namespace)
+    except Exception as exc:
+        raise RuntimeError(f"Could not execute submission source: {exc}") from exc
+
+    submission = namespace.get(function_name)
+    if allow_direct_submission and type_validator(submission):
+        return submission
+
+    if not callable(submission):
+        raise RuntimeError(f"Submission must define a callable `{function_name}` function.")
+
+    try:
+        result = submission()
+    except Exception as exc:
+        raise RuntimeError(f"`{function_name}` failed while building the circuit: {exc}") from exc
+
+    if not type_validator(result):
+        raise RuntimeError(type_error_message)
+
+    return result
+

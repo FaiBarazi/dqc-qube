@@ -9,7 +9,11 @@ from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, qasm3
 from qiskit.circuit import Parameter, ParameterVector
 
 from pipeline.converters.errors import ConversionError
-from pipeline.converters.sandbox import ALLOWED_IMPORT_ROOTS_QISKIT as ALLOWED_IMPORT_ROOTS, build_execution_namespace
+from pipeline.converters.sandbox import (
+    ALLOWED_IMPORT_ROOTS_QISKIT as ALLOWED_IMPORT_ROOTS,
+    build_execution_namespace,
+    execute_submission_source,
+)
 
 
 @dataclass(frozen=True)
@@ -53,22 +57,14 @@ def source_to_circuit(source: str, function_name: str = "solve") -> QuantumCircu
         },
     )
 
-    try:
-        exec(compile(source, "<qiskit-submission>", "exec"), namespace)
-    except Exception as exc:
-        raise ConversionError(f"Could not execute Qiskit source: {exc}") from exc
-
-    solve = namespace.get(function_name)
-    if not callable(solve):
-        raise ConversionError(f"Submission must define a callable `{function_name}` function.")
-
-    try:
-        circuit = solve()
-    except Exception as exc:
-        raise ConversionError(f"`{function_name}` failed while building the circuit: {exc}") from exc
-
-    _ensure_quantum_circuit(circuit)
-    return circuit
+    return execute_submission_source(
+        source=source,
+        function_name=function_name,
+        namespace=namespace,
+        type_validator=lambda value: isinstance(value, QuantumCircuit),
+        type_error_message="Expected a qiskit.QuantumCircuit.",
+        allow_direct_submission=False,
+    )
 
 
 def source_to_qasm3(source: str, function_name: str = "solve") -> QiskitConversionResult:
