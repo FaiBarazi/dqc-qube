@@ -11,7 +11,7 @@ from qiskit import QuantumCircuit
 
 from pipeline.converters.errors import ConversionError
 from pipeline.converters.qiskit_converter import circuit_to_qasm3
-from pipeline.converters.sandbox import SAFE_BUILTINS, ALLOWED_IMPORT_ROOTS
+from pipeline.converters.sandbox import ALLOWED_IMPORT_ROOTS_PENNYLANE as ALLOWED_IMPORT_ROOTS, build_execution_namespace
 
 
 PennyLaneCircuit = Union[QNode, QuantumScript]
@@ -153,7 +153,13 @@ def pennylane_source_to_circuit(source: str, function_name: str = "solve") -> Pe
     The submission can define `solve` as a QNode directly, or as a no-argument
     factory function that returns a QNode or QuantumScript.
     """
-    namespace = _build_execution_namespace()
+    namespace = build_execution_namespace(
+        allowed_import_roots=ALLOWED_IMPORT_ROOTS,
+        extra_symbols={
+            "pennylane": pq,
+            "pq": pq,
+        },
+    )
 
     try:
         exec(compile(source, "<pennylane-submission>", "exec"), namespace)
@@ -235,22 +241,4 @@ def _is_pennylane_circuit(value: Any) -> bool:
     return isinstance(value, (QNode, QuantumScript))
 
 
-def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
-    root = name.split(".")[0]
-    if root in ALLOWED_IMPORT_ROOTS:
-        return __import__(name, globals, locals, fromlist, level)
-
-    raise ImportError(f"Import of module '{name}' is not allowed during conversion.")
-
-
-def _build_execution_namespace() -> dict[str, Any]:
-    safe_builtins = dict(SAFE_BUILTINS)
-    safe_builtins["__import__"] = _safe_import
-
-    return {
-        "__builtins__": safe_builtins,
-        "__name__": "__pennylane_submission__",
-        "pennylane": pq,
-        "pq": pq,
-    }
 

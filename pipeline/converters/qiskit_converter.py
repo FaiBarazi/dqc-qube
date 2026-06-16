@@ -9,7 +9,7 @@ from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, qasm3
 from qiskit.circuit import Parameter, ParameterVector
 
 from pipeline.converters.errors import ConversionError
-from pipeline.converters.sandbox import SAFE_BUILTINS, ALLOWED_IMPORT_ROOTS_QISKIT as ALLOWED_IMPORT_ROOTS
+from pipeline.converters.sandbox import ALLOWED_IMPORT_ROOTS_QISKIT as ALLOWED_IMPORT_ROOTS, build_execution_namespace
 
 
 @dataclass(frozen=True)
@@ -40,13 +40,18 @@ def export_circuit_to_qasm3(circuit: QuantumCircuit, output_path: Union[str, Pat
 
 
 def source_to_circuit(source: str, function_name: str = "solve") -> QuantumCircuit:
-    """
-    Execute Qiskit source code and return the circuit produced by `function_name`.
-
-    This is intended for local conversion and MVP judging only. Production user
-    submissions should run in a separate sandboxed process or container.
-    """
-    namespace = _build_execution_namespace()
+    """Execute Qiskit source code and return the circuit produced by `function_name`."""
+    namespace = build_execution_namespace(
+        allowed_import_roots=ALLOWED_IMPORT_ROOTS,
+        extra_symbols={
+            "ClassicalRegister": ClassicalRegister,
+            "Parameter": Parameter,
+            "ParameterVector": ParameterVector,
+            "QuantumCircuit": QuantumCircuit,
+            "QuantumRegister": QuantumRegister,
+            "qiskit": qiskit,
+        },
+    )
 
     try:
         exec(compile(source, "<qiskit-submission>", "exec"), namespace)
@@ -77,25 +82,3 @@ def _ensure_quantum_circuit(circuit: Any) -> None:
         raise ConversionError("Expected a qiskit.QuantumCircuit.")
 
 
-def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
-    root = name.split(".")[0]
-    if root in ALLOWED_IMPORT_ROOTS:
-        return __import__(name, globals, locals, fromlist, level)
-
-    raise ImportError(f"Import of module '{name}' is not allowed during conversion.")
-
-
-def _build_execution_namespace() -> dict[str, Any]:
-    safe_builtins = dict(SAFE_BUILTINS)
-    safe_builtins["__import__"] = _safe_import
-
-    return {
-        "__builtins__": safe_builtins,
-        "__name__": "__qiskit_submission__",
-        "ClassicalRegister": ClassicalRegister,
-        "Parameter": Parameter,
-        "ParameterVector": ParameterVector,
-        "QuantumCircuit": QuantumCircuit,
-        "QuantumRegister": QuantumRegister,
-        "qiskit": qiskit,
-    }
