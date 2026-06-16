@@ -1,6 +1,6 @@
 from types import MappingProxyType
+from typing import Any
 
-# Shared safe builtins used for executing untrusted submission code.
 SAFE_BUILTINS = MappingProxyType(
     {
         "abs": abs,
@@ -43,6 +43,31 @@ SAFE_BUILTINS = MappingProxyType(
     }
 )
 
-# Allowed import roots for the Qiskit execution sandbox
-ALLOWED_IMPORT_ROOTS = frozenset({"cmath", "math", "numpy", "qiskit", "random"})
+ALLOWED_IMPORT_ROOTS_QISKIT = frozenset({"cmath", "math", "numpy", "qiskit", "random"})
+ALLOWED_IMPORT_ROOTS_PENNYLANE = frozenset({"cmath", "math", "numpy", "pennylane", "random"})
+
+
+def _safe_import(name: str, allowed_import_roots: frozenset[str], globals=None, locals=None, fromlist=(), level=0):
+    root = name.split(".")[0]
+    if root in allowed_import_roots:
+        return __import__(name, globals, locals, fromlist, level)
+    raise ImportError(f"Import of module '{name}' is not allowed during conversion.")
+
+
+def build_execution_namespace(
+    allowed_import_roots: frozenset[str],
+    extra_symbols: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    safe_builtins = dict(SAFE_BUILTINS)
+    safe_builtins["__import__"] = lambda name, globals=None, locals=None, fromlist=(), level=0: _safe_import(
+        name, allowed_import_roots, globals, locals, fromlist, level
+    )
+
+    namespace = {
+        "__builtins__": safe_builtins,
+        "__name__": "__submission__",
+    }
+    if extra_symbols:
+        namespace.update(extra_symbols)
+    return namespace
 
