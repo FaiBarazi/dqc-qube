@@ -12,7 +12,7 @@ import markdown
 import plotly.graph_objects as go
 
 from pipeline.converters.qiskit_converter import ConversionError, source_to_circuit
-from pipeline.evaluation_pipeline import compute_fidelity, evolve_state
+from pipeline.evaluation_pipeline import compute_fidelity, evolve_state, get_reference_statevector
 from pipeline.benchmark_pipeline import benchmark_metrics
 
 
@@ -354,10 +354,13 @@ def server(input, output, session):
         fidelity_text = "Problem-specific target state not available."
         validation_text = ""
 
-        if problem_tests is not None and hasattr(problem_tests, "target_state"):
+        meta = current_metadata()
+        if meta.get("evaluation_type") == "statevector":
             try:
-                target_state = problem_tests.target_state()
-                fidelity = compute_fidelity(output_state, target_state)
+                reference_state = get_reference_statevector(
+                    current_problem(), meta, circuit.num_qubits
+                )
+                fidelity = compute_fidelity(output_state, reference_state)
                 fidelity_text = f"Fidelity: {fidelity:.6f}"
             except Exception as exc:
                 fidelity_text = f"Could not compute fidelity: {exc}"

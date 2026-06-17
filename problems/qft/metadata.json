@@ -1,11 +1,12 @@
-  {
-    "name": "deutsch_josza_algorithm",
-    "title": "Deutsch Jozsa",
-    "difficulty": "easy",
-    "description": "problem description here",
-    "qubits": 5,
-    "fidelity_threshold": 0.988,
-    "allowed_gates": "",
-    "mqt_bench_key": "dj",
-    "evaluation": "statevector"
-  }
+{
+  "id": "qft",
+  "title": "Quantum Fourier Transform",
+  "difficulty": "easy",
+  "description": "problem description here",
+  "qubits": 5,
+  "fidelity_threshold": 0.999,
+  "allowed_gates": "",
+  "mqt_bench_key": "qft",
+  "evaluation_type": "statevector",
+  "evaluation_target": "custom"
+}

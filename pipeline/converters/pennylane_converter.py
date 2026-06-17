@@ -20,15 +20,13 @@ from pipeline.converters.sandbox import (
 
 PennyLaneCircuit = Union[QNode, QuantumScript]
 
-
+# Note: Pennylane can import openQASM3 but can only export openQASM2
 @dataclass(frozen=True)
 class PennyLaneConversionResult:
     circuit: PennyLaneCircuit
     qasm: str
     qasm_version: str
 
-
-# SAFE_BUILTINS and ALLOWED_IMPORT_ROOTS are provided by pipeline.converters.sandbox
 
 
 def pennylane_to_qasm2(
