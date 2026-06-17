@@ -6,6 +6,8 @@
   "qubits": 2,
   "fidelity_threshold": 0.999,
   "allowed_gates": ["h", "cx"],
-  "tags": ["state-preparation", "entanglement"]
+  "tags": ["state-preparation", "entanglement"],
+  "mqt_bench_key": "",
+  "evaluation_type": "statevector",
+  "evaluation_target": "custom"
 }
-

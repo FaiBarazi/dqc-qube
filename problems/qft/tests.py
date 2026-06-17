@@ -1,20 +1,11 @@
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector, state_fidelity
-import numpy as np
+
+from problems.qft.reference_circuit import get_reference_circuit
 
 
 FIDELITY_THRESHOLD = 0.999
 EXPECTED_QUBITS = 5
-
-
-def target_state() -> Statevector:
-    # Construct the analytic QFT|13> state for n=5 qubits
-    n = EXPECTED_QUBITS
-    N = 2 ** n
-    j = 13
-    phases = np.exp(2j * np.pi * np.arange(N) * j / N)
-    vec = phases / np.sqrt(N)
-    return Statevector(vec)
 
 
 def validate(circuit: QuantumCircuit) -> dict:
@@ -48,7 +39,8 @@ def validate(circuit: QuantumCircuit) -> dict:
             "message": f"Could not simulate circuit: {exc}",
         }
 
-    fidelity = float(state_fidelity(target_state(), output_state))
+    reference_state = Statevector.from_instruction(get_reference_circuit())
+    fidelity = float(state_fidelity(reference_state, output_state))
 
     return {
         "passed": fidelity >= FIDELITY_THRESHOLD,

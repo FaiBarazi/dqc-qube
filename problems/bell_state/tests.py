@@ -1,16 +1,11 @@
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector, state_fidelity
 
+from problems.bell_state.reference_circuit import get_reference_circuit
+
 
 FIDELITY_THRESHOLD = 0.999
 EXPECTED_QUBITS = 2
-
-
-def target_state() -> Statevector:
-    circuit = QuantumCircuit(EXPECTED_QUBITS)
-    circuit.h(0)
-    circuit.cx(0, 1)
-    return Statevector.from_instruction(circuit)
 
 
 def validate(circuit: QuantumCircuit) -> dict:
@@ -44,7 +39,8 @@ def validate(circuit: QuantumCircuit) -> dict:
             "message": f"Could not simulate circuit: {exc}",
         }
 
-    fidelity = float(state_fidelity(target_state(), output_state))
+    reference_state = Statevector.from_instruction(get_reference_circuit())
+    fidelity = float(state_fidelity(reference_state, output_state))
 
     return {
         "passed": fidelity >= FIDELITY_THRESHOLD,
