@@ -434,7 +434,7 @@ def server(input, output, session):
             y=y_labels,
             x=reference_vals,
             orientation="h",
-            marker_color="#3498db",
+            marker_color="#3d3d3d",
             text=reference_vals,
             textposition="outside",
         ))
