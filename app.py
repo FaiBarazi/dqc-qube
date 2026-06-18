@@ -450,13 +450,16 @@ def server(input, output, session):
             title=dict(
                 text=f"{problem_title}: Your Solution vs Reference",
                 font=dict(size=14, color="#222"),
+                x=0,
+                xref="paper",
+                xanchor="left",
             ),
             xaxis=dict(title="Count", tickfont=dict(size=12), showgrid=True, gridcolor="#eee"),
-            yaxis=dict(title="", tickfont=dict(size=12), showgrid=False, autorange="reversed"),
+            yaxis=dict(title="", tickfont=dict(size=12), showgrid=False, autorange="reversed", ticklabelposition="inside"),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             plot_bgcolor="white",
             paper_bgcolor="white",
-            margin=dict(t=70, b=40, l=140, r=50),
+            margin=dict(t=70, b=40, l=10, r=50),
             height=380,
         )
 
