@@ -86,12 +86,11 @@ app_ui = ui.page_fluid(
             .code-section { background: white; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; border: 1px solid #ddd; }
             .code-editor-label { color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
             #code_editor_container { border-radius: 4px; background: white; border: 1px solid #ccc; }
-            .CodeMirror { background: white !important; color: #333 !important; height: 400px !important; }
+            .CodeMirror { background: white !important; color: #333 !important; height: 450px !important; }
             .CodeMirror-cursor { border-left: 2px solid #e74c3c !important; }
             .benchmark-section { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 24px; }
             .benchmark-title { font-size: 20px; font-weight: 600; color: #222; margin-bottom: 4px; }
             .benchmark-subtitle { font-size: 13px; color: #888; margin-bottom: 16px; }
-            .no-mqt-banner { background: #fff8e1; border-left: 4px solid #f9a825; padding: 14px 18px; border-radius: 4px; color: #5d4037; font-size: 14px; }
         """)
     ),
     ui.div(
@@ -121,7 +120,7 @@ app_ui = ui.page_fluid(
             ui.div(
                 ui.output_ui("problem_description"),
                 class_="problem-section",
-                style="max-height: 600px; overflow-y: auto;",
+                style="height: 600px; overflow-y: auto;",
             ),
         ),
         ui.column(
@@ -136,20 +135,26 @@ app_ui = ui.page_fluid(
                 ),
                 ui.div(
                     id="code_editor_container",
-                    style="flex-grow: 1; margin-bottom: 15px;"
+                    style="margin-bottom: 15px;"
                 ),
                 ui.output_ui("_init_editor"),
                 ui.input_action_button("run_code", "Submit solution", class_="btn-danger red-button", style="width: 100%; padding: 12px; font-weight: bold; font-size: 16px; border: none;"),
-                ui.div(
-                    ui.output_text_verbatim("code_output"),
-                    style="background: #f5f5f5; padding: 15px; border-radius: 4px; margin-top: 15px; min-height: 100px; font-size: 13px; white-space: pre-wrap; border: 1px solid #ddd;",
-                ),
                 class_="code-section",
-                style="height: 100%; display: flex; flex-direction: column;",
+                style="height: 600px; display: flex; flex-direction: column; overflow: hidden;",
             ),
         ),
     ),
-    # ── MQT Bench comparison ──────────────────────────────────────────────────
+    # ── Result output ─────────────────────────────────────────────────────────
+    ui.row(
+        ui.column(
+            12,
+            ui.div(
+                ui.output_text_verbatim("code_output"),
+                style="background: #f5f5f5; padding: 15px; border-radius: 4px; margin-top: 24px; min-height: 80px; font-size: 13px; white-space: pre-wrap; border: 1px solid #ddd;",
+            ),
+        ),
+    ),
+    # ── Benchmark comparison ──────────────────────────────────────────────────
     ui.row(
         ui.column(
             12,
