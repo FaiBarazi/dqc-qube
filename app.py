@@ -374,8 +374,8 @@ def server(input, output, session):
                 validation_text = f"\nCould not validate solution: {exc}"
 
         result_lines = [
-            "Circuit built successfully using source_to_circuit().",
-            f"Qubits: {circuit.num_qubits}, Clbits: {circuit.num_clbits}",
+            "Circuit built successfully.",
+            f"Qubits: {circuit.num_qubits}",
             fidelity_text,
         ]
         if validation_text:
