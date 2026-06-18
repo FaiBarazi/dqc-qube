@@ -1,6 +1,4 @@
 from qiskit import QuantumCircuit
-from mqt.bench import get_benchmark
-from mqt.bench.benchmark_generation import BenchmarkLevel
 from mqt.bench.benchmarks import get_benchmark_catalog
 
 
@@ -33,36 +31,32 @@ def get_alg_benchmark(circuit: QuantumCircuit) -> dict:
     }
 
 
-def benchmark_metrics(mqt_bench_key: str, submitted_circuit: QuantumCircuit) -> dict:
+def benchmark_metrics(reference_circuit: QuantumCircuit, submitted_circuit: QuantumCircuit) -> dict:
     """
-    Compare a submitted circuit against the equivalent MQT Bench reference circuit.
+    Compare a submitted circuit against a reference circuit.
 
-    Fetches the MQT Bench ALG-level circuit for *mqt_bench_key* at the same
-    qubit count as *submitted_circuit*, computes ``get_alg_benchmark`` for both,
-    and returns a side-by-side comparison.
+    Computes :func:`get_alg_benchmark` for both circuits and returns a
+    side-by-side comparison.  The reference circuit is obtained externally
+    (e.g. via :func:`pipeline.evaluation_pipeline.get_reference_circuit`) so
+    that this function stays agnostic of whether the reference comes from a
+    custom ``reference_circuit.py`` or from MQT Bench.
 
     Args:
-        mqt_bench_key: The MQT Bench benchmark identifier (e.g. ``"dj"``, ``"qft"``).
+        reference_circuit: The reference / gold-standard QuantumCircuit.
         submitted_circuit: The user's compiled QuantumCircuit.
 
     Returns:
-        dict with keys ``"submitted"`` and ``"mqt_bench"``, each containing the
-        metrics produced by :func:`get_alg_benchmark`::
+        dict with keys ``"submitted"`` and ``"reference"``, each containing
+        the metrics produced by :func:`get_alg_benchmark`::
 
             {
-                "submitted": {"depth": ..., "num_single_gates": ..., ...},
-                "mqt_bench":  {"depth": ..., "num_single_gates": ..., ...},
+                "submitted":  {"depth": ..., "num_single_gates": ..., ...},
+                "reference":  {"depth": ..., "num_single_gates": ..., ...},
             }
     """
-    num_qubits = submitted_circuit.num_qubits
-    mqt_circuit = get_benchmark(
-        mqt_bench_key,
-        BenchmarkLevel.ALG,
-        circuit_size=num_qubits,
-    )
     return {
         "submitted": get_alg_benchmark(submitted_circuit),
-        "mqt_bench": get_alg_benchmark(mqt_circuit),
+        "reference": get_alg_benchmark(reference_circuit),
     }
 
 

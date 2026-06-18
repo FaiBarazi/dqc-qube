@@ -19,22 +19,22 @@ def compute_fidelity(output_state, target_state) -> float:
     return fidelity
 
 
-def get_reference_statevector(
+def get_reference_circuit(
     problem_name: str,
     metadata: dict,
     num_qubits: int | None = None,
-) -> Statevector:
-    """Return the reference Statevector for a problem.
+) -> QuantumCircuit:
+    """Return the reference QuantumCircuit for a problem.
 
     Routing is driven by ``metadata["evaluation_target"]``:
 
     ``"custom"``
-        Imports ``problems.<problem_name>.reference_circuit``, calls
-        ``get_reference_circuit()``, and simulates the returned circuit.
+        Imports ``problems.<problem_name>.reference_circuit`` and calls
+        ``get_reference_circuit()``.
 
     ``"mqt"``
         Fetches the MQT Bench ALG-level circuit identified by
-        ``metadata["mqt_bench_key"]`` at *num_qubits* size and simulates it.
+        ``metadata["mqt_bench_key"]`` at *num_qubits* size.
         *num_qubits* is required for this target.
 
     Args:
@@ -43,7 +43,7 @@ def get_reference_statevector(
         num_qubits:   Required only when ``evaluation_target`` is ``"mqt"``.
 
     Returns:
-        The reference :class:`~qiskit.quantum_info.Statevector`.
+        The reference :class:`~qiskit.QuantumCircuit`.
 
     Raises:
         ValueError: If the target is unknown, or ``num_qubits`` / ``mqt_bench_key``
@@ -53,8 +53,7 @@ def get_reference_statevector(
 
     if evaluation_target == "custom":
         module = importlib.import_module(f"problems.{problem_name}.reference_circuit")
-        ref_circuit = module.get_reference_circuit()
-        return Statevector.from_instruction(ref_circuit)
+        return module.get_reference_circuit()
 
     if evaluation_target == "mqt":
         if num_qubits is None:
@@ -69,11 +68,24 @@ def get_reference_statevector(
         from mqt.bench import get_benchmark  # noqa: PLC0415
         from mqt.bench.benchmark_generation import BenchmarkLevel  # noqa: PLC0415
 
-        mqt_circuit = get_benchmark(
+        return get_benchmark(
             mqt_bench_key, BenchmarkLevel.ALG, circuit_size=num_qubits
         )
-        return Statevector.from_instruction(mqt_circuit)
 
     raise ValueError(
         f"Unknown evaluation_target '{evaluation_target}'. Expected 'custom' or 'mqt'."
     )
+
+
+def get_reference_statevector(
+    problem_name: str,
+    metadata: dict,
+    num_qubits: int | None = None,
+) -> Statevector:
+    """Return the reference Statevector for a problem.
+
+    Obtains the reference circuit via :func:`get_reference_circuit` and
+    simulates it.  See that function for argument details.
+    """
+    ref_circuit = get_reference_circuit(problem_name, metadata, num_qubits)
+    return Statevector.from_instruction(ref_circuit)

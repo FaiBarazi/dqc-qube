@@ -12,7 +12,7 @@ import markdown
 import plotly.graph_objects as go
 
 from pipeline.converters.qiskit_converter import ConversionError, source_to_circuit
-from pipeline.evaluation_pipeline import compute_fidelity, evolve_state, get_reference_statevector
+from pipeline.evaluation_pipeline import compute_fidelity, evolve_state, get_reference_circuit, get_reference_statevector
 from pipeline.benchmark_pipeline import benchmark_metrics
 
 
@@ -316,17 +316,11 @@ def server(input, output, session):
             return
 
         meta = current_metadata()
-        mqt_key = meta.get("mqt_bench_key", None)
-
-        if mqt_key is None:
-            # No matching MQT Bench circuit (e.g. bell_state)
-            _benchmark_result.set({"no_mqt_key": True})
-            return
 
         try:
             circuit = source_to_circuit(code)
-            result = benchmark_metrics(mqt_key, circuit)
-            result["no_mqt_key"] = False
+            ref_circuit = get_reference_circuit(current_problem(), meta, circuit.num_qubits)
+            result = benchmark_metrics(ref_circuit, circuit)
             _benchmark_result.set(result)
         except Exception as exc:
             _benchmark_result.set({"error": str(exc)})
@@ -396,19 +390,8 @@ def server(input, output, session):
         if result is None:
             return ui.div(
                 ui.p(
-                    "Submit a solution to see how your circuit compares against the MQT Bench reference.",
+                    "Submit a solution to see how your circuit compares against the reference.",
                     style="color: #aaa; font-style: italic; text-align: center; padding: 20px 0;",
-                )
-            )
-
-        # Problem has no MQT Bench equivalent
-        if result.get("no_mqt_key"):
-            return ui.div(
-                ui.div(
-                    ui.tags.b("MQT Bench comparison not available"),
-                    ui.tags.br(),
-                    "MQT Bench does not have a matching circuit for this problem.",
-                    class_="no-mqt-banner",
                 )
             )
 
@@ -416,7 +399,7 @@ def server(input, output, session):
         if "error" in result:
             return ui.div(
                 ui.p(
-                    f"Could not compute MQT Bench comparison: {result['error']}",
+                    f"Could not compute benchmark comparison: {result['error']}",
                     style="color: #c0392b;",
                 )
             )
@@ -430,7 +413,7 @@ def server(input, output, session):
         ]
 
         submitted_vals = [result["submitted"][k] for k, _ in metrics_labels]
-        mqt_vals       = [result["mqt_bench"][k]  for k, _ in metrics_labels]
+        reference_vals = [result["reference"][k]  for k, _ in metrics_labels]
         x_labels       = [label for _, label in metrics_labels]
 
         fig = go.Figure()
@@ -443,22 +426,21 @@ def server(input, output, session):
             textposition="outside",
         ))
         fig.add_trace(go.Bar(
-            name="MQT Bench",
+            name="Reference Circuit",
             x=x_labels,
-            y=mqt_vals,
+            y=reference_vals,
             marker_color="#3498db",
-            text=mqt_vals,
+            text=reference_vals,
             textposition="outside",
         ))
 
         meta = current_metadata()
-        mqt_key = meta.get("mqt_bench_key", "")
         problem_title = meta.get("title", current_problem())
 
         fig.update_layout(
             barmode="group",
             title=dict(
-                text=f"Circuit Benchmark: Your Solution vs MQT Bench ({mqt_key})",
+                text=f"Circuit Benchmark: {problem_title} — Your Solution vs Reference Circuit",
                 font=dict(size=16, color="#222"),
             ),
             xaxis=dict(title="Metric", tickfont=dict(size=13)),
@@ -481,7 +463,7 @@ def server(input, output, session):
         return ui.div(
             ui.div(
                 ui.p(
-                    "Comparison against the MQT Bench reference circuit at the algorithm level "
+                    "Comparison against the reference circuit at the algorithm level "
                     "(no transpilation / gate mapping applied).",
                     class_="benchmark-subtitle",
                 ),
