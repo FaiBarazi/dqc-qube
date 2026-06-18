@@ -91,6 +91,8 @@ app_ui = ui.page_fluid(
             .benchmark-section { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: 100%; box-sizing: border-box; }
             .benchmark-title { font-size: 20px; font-weight: 600; color: #222; margin-bottom: 4px; }
             .benchmark-subtitle { font-size: 13px; color: #888; margin-bottom: 16px; }
+            .result-card { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: 100%; box-sizing: border-box; }
+            .result-card pre.shiny-text-output { background: #f5f5f5; padding: 15px; border-radius: 4px; border: 1px solid #ddd; font-size: 13px; margin: 0; }
         """)
     ),
     ui.div(
@@ -149,8 +151,9 @@ app_ui = ui.page_fluid(
         ui.column(
             6,
             ui.div(
+                ui.p("Output", style="font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px 0;"),
                 ui.output_text_verbatim("code_output"),
-                style="background: #f5f5f5; padding: 15px; border-radius: 4px; font-size: 13px; white-space: pre-wrap; border: 1px solid #ddd; height: 100%; box-sizing: border-box;",
+                class_="result-card",
             ),
         ),
         ui.column(
