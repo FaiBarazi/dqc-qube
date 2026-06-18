@@ -120,6 +120,7 @@ app_ui = ui.page_fluid(
         ui.column(
             6,
             ui.div(
+                ui.p("Description", style="font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px 0;"),
                 ui.output_ui("problem_description"),
                 class_="problem-section",
                 style="height: 600px; overflow-y: auto;",
@@ -470,12 +471,11 @@ def server(input, output, session):
         )
 
         return ui.div(
-            ui.div(
-                ui.p(
-                    "Comparison against the reference circuit at the algorithm level "
-                    "(no transpilation / gate mapping applied).",
-                    class_="benchmark-subtitle",
-                ),
+            ui.p("Benchmark", style="font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px 0;"),
+            ui.p(
+                "Comparison against the reference circuit at the algorithm level "
+                "(no transpilation / gate mapping applied).",
+                class_="benchmark-subtitle",
             ),
             ui.HTML(chart_html),
         )
