@@ -88,7 +88,7 @@ app_ui = ui.page_fluid(
             #code_editor_container { border-radius: 4px; background: white; border: 1px solid #ccc; }
             .CodeMirror { background: white !important; color: #333 !important; height: 450px !important; }
             .CodeMirror-cursor { border-left: 2px solid #e74c3c !important; }
-            .benchmark-section { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 24px; }
+            .benchmark-section { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: 100%; box-sizing: border-box; }
             .benchmark-title { font-size: 20px; font-weight: 600; color: #222; margin-bottom: 4px; }
             .benchmark-subtitle { font-size: 13px; color: #888; margin-bottom: 16px; }
         """)
@@ -144,25 +144,23 @@ app_ui = ui.page_fluid(
             ),
         ),
     ),
-    # ── Result output ─────────────────────────────────────────────────────────
+    # ── Results + Benchmark ────────────────────────────────────────────────────
     ui.row(
         ui.column(
-            12,
+            6,
             ui.div(
                 ui.output_text_verbatim("code_output"),
-                style="background: #f5f5f5; padding: 15px; border-radius: 4px; margin-top: 24px; min-height: 80px; font-size: 13px; white-space: pre-wrap; border: 1px solid #ddd;",
+                style="background: #f5f5f5; padding: 15px; border-radius: 4px; font-size: 13px; white-space: pre-wrap; border: 1px solid #ddd; height: 100%; box-sizing: border-box;",
             ),
         ),
-    ),
-    # ── Benchmark comparison ──────────────────────────────────────────────────
-    ui.row(
         ui.column(
-            12,
+            6,
             ui.div(
                 ui.output_ui("benchmark_comparison"),
                 class_="benchmark-section",
             ),
         ),
+        style="margin-top: 24px; display: flex; align-items: stretch;",
     ),
 )
 
@@ -419,21 +417,23 @@ def server(input, output, session):
 
         submitted_vals = [result["submitted"][k] for k, _ in metrics_labels]
         reference_vals = [result["reference"][k]  for k, _ in metrics_labels]
-        x_labels       = [label for _, label in metrics_labels]
+        y_labels       = [label for _, label in metrics_labels]
 
         fig = go.Figure()
         fig.add_trace(go.Bar(
             name="Your Circuit",
-            x=x_labels,
-            y=submitted_vals,
+            y=y_labels,
+            x=submitted_vals,
+            orientation="h",
             marker_color="#e74c3c",
             text=submitted_vals,
             textposition="outside",
         ))
         fig.add_trace(go.Bar(
             name="Reference Circuit",
-            x=x_labels,
-            y=reference_vals,
+            y=y_labels,
+            x=reference_vals,
+            orientation="h",
             marker_color="#3498db",
             text=reference_vals,
             textposition="outside",
@@ -445,19 +445,17 @@ def server(input, output, session):
         fig.update_layout(
             barmode="group",
             title=dict(
-                text=f"Circuit Benchmark: {problem_title} — Your Solution vs Reference Circuit",
-                font=dict(size=16, color="#222"),
+                text=f"{problem_title}: Your Solution vs Reference",
+                font=dict(size=14, color="#222"),
             ),
-            xaxis=dict(title="Metric", tickfont=dict(size=13)),
-            yaxis=dict(title="Count", tickfont=dict(size=13)),
+            xaxis=dict(title="Count", tickfont=dict(size=12), showgrid=True, gridcolor="#eee"),
+            yaxis=dict(title="", tickfont=dict(size=12), showgrid=False, autorange="reversed"),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             plot_bgcolor="white",
             paper_bgcolor="white",
-            margin=dict(t=80, b=40, l=50, r=30),
+            margin=dict(t=70, b=40, l=140, r=50),
             height=380,
         )
-        fig.update_xaxes(showgrid=False)
-        fig.update_yaxes(showgrid=True, gridcolor="#eee")
 
         chart_html = fig.to_html(
             full_html=False,
