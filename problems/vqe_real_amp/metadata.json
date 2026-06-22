@@ -1,0 +1,12 @@
+{
+  "id": "vqe_real_amp",
+  "title": "VQE Real Amplitudes Ansatz",
+  "difficulty": "medium",
+  "qubits": 5,
+  "fidelity_threshold": 0.999,
+  "allowed_gates": ["ry", "cx"],
+  "tags": ["variational", "ansatz", "vqe", "real-amplitudes"],
+  "mqt_bench_key": "vqe",
+  "evaluation_type": "statevector",
+  "evaluation_target": "custom"
+}
