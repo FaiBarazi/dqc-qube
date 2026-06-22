@@ -32,3 +32,10 @@ def solve() -> QuantumCircuit:
     return circuit
 ```
 
+## Available Problems
+
+| ID              | Title                        | Difficulty | Qubits | Tags                                          |
+|-----------------|------------------------------|------------|--------|-----------------------------------------------|
+| `bell_state`    | Bell State Preparation       | easy       | 2      | state-preparation, entanglement               |
+| `qft`           | Quantum Fourier Transform    | easy       | 5      | qft, state-preparation                        |
+| `vqe_real_amp`  | VQE Real Amplitudes Ansatz   | medium     | 5      | variational, ansatz, vqe, real-amplitudes     |
