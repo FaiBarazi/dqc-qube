@@ -57,14 +57,17 @@ def source_to_circuit(source: str, function_name: str = "solve") -> QuantumCircu
         },
     )
 
-    return execute_submission_source(
-        source=source,
-        function_name=function_name,
-        namespace=namespace,
-        type_validator=lambda value: isinstance(value, QuantumCircuit),
-        type_error_message="Expected a qiskit.QuantumCircuit.",
-        allow_direct_submission=False,
-    )
+    try:
+        return execute_submission_source(
+            source=source,
+            function_name=function_name,
+            namespace=namespace,
+            type_validator=lambda value: isinstance(value, QuantumCircuit),
+            type_error_message="Expected a qiskit.QuantumCircuit.",
+            allow_direct_submission=False,
+        )
+    except RuntimeError as exc:
+        raise ConversionError(str(exc)) from exc
 
 
 def source_to_qasm3(source: str, function_name: str = "solve") -> QiskitConversionResult:
@@ -76,5 +79,4 @@ def source_to_qasm3(source: str, function_name: str = "solve") -> QiskitConversi
 def _ensure_quantum_circuit(circuit: Any) -> None:
     if not isinstance(circuit, QuantumCircuit):
         raise ConversionError("Expected a qiskit.QuantumCircuit.")
-
 

@@ -163,14 +163,17 @@ def pennylane_source_to_circuit(source: str, function_name: str = "solve") -> Pe
         },
     )
 
-    circuit = execute_submission_source(
-        source=source,
-        function_name=function_name,
-        namespace=namespace,
-        type_validator=lambda value: isinstance(value, (QNode, QuantumScript)),
-        type_error_message="Expected a PennyLane QNode or QuantumScript.",
-        allow_direct_submission=True,
-    )
+    try:
+        circuit = execute_submission_source(
+            source=source,
+            function_name=function_name,
+            namespace=namespace,
+            type_validator=lambda value: isinstance(value, (QNode, QuantumScript)),
+            type_error_message="Expected a PennyLane QNode or QuantumScript.",
+            allow_direct_submission=True,
+        )
+    except RuntimeError as exc:
+        raise ConversionError(str(exc)) from exc
 
     _ensure_pennylane_circuit(circuit)
     return circuit
@@ -231,6 +234,5 @@ def _ensure_pennylane_circuit(circuit: Any) -> None:
 
 def _is_pennylane_circuit(value: Any) -> bool:
     return isinstance(value, (QNode, QuantumScript))
-
 
 
