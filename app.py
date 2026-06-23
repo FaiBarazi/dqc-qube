@@ -456,7 +456,7 @@ def server(input, output, session):
                 xref="paper",
                 xanchor="left",
             ),
-            xaxis=dict(title="Count", tickfont=dict(size=12), showgrid=True, gridcolor="#eee"),
+            xaxis=dict(title="Count", tickfont=dict(size=12), showgrid=True, gridcolor="#eee", showticklabels=False),
             yaxis=dict(title="", tickfont=dict(size=12), showgrid=False, autorange="reversed", ticklabelposition="inside"),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             plot_bgcolor="white",
