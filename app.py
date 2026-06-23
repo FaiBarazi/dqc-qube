@@ -78,6 +78,8 @@ app_ui = ui.page_fluid(
         # CodeMirror JS
         ui.tags.script(src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"),
         ui.tags.script(src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"),
+        # Plotly JS
+        ui.tags.script(src="https://cdn.plot.ly/plotly-latest.min.js"),
         # Custom styles
         ui.tags.style("""
             .red-button { background-color: #e74c3c !important; border-color: #c0392b !important; }
