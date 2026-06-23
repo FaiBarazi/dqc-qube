@@ -248,7 +248,7 @@ def server(input, output, session):
     def _init_editor():
         code = starter_code()
         # Escape the code properly for JavaScript
-        escaped_code = code.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+        code.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
         return ui.HTML(
             f"""
             <script>
