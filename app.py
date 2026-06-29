@@ -355,35 +355,20 @@ def server(input, output, session):
             return f"Could not simulate circuit output: {exc}"
 
         problem_tests = load_problem_tests(current_problem())
-        fidelity_text = "Problem-specific target state not available."
-        validation_text = ""
-
         meta = current_metadata()
-        if meta.get("evaluation_type") == "statevector":
-            try:
-                reference_state = get_reference_statevector(
-                    current_problem(), meta, circuit.num_qubits
-                )
-                fidelity = compute_fidelity(output_state, reference_state)
-                fidelity_text = f"Fidelity: {fidelity:.6f}"
-            except Exception as exc:
-                fidelity_text = f"Could not compute fidelity: {exc}"
-
-        if problem_tests is not None and hasattr(problem_tests, "validate"):
-            try:
-                validation = problem_tests.validate(circuit)
-                validation_text = (
-                    f"\nValidation: {validation.get('message', 'n/a')}"
-                    f"\nPassed: {validation.get('passed', False)}"
-                    f"\nReported fidelity: {validation.get('fidelity', 0.0):.6f}"
-                )
-            except Exception as exc:
-                validation_text = f"\nCould not validate solution: {exc}"
+        try:
+            validation = problem_tests.validate(circuit)
+            validation_text = (
+                f"\nValidation: {validation.get('message', 'n/a')}"
+                f"\nPassed: {validation.get('passed', False)}"
+                f"\nReported fidelity: {validation.get('fidelity', 0.0):.6f}"
+            )
+        except Exception as exc:
+            validation_text = f"\nCould not validate solution: {exc}"
 
         result_lines = [
             "Circuit built successfully.",
             f"Qubits: {circuit.num_qubits}",
-            fidelity_text,
         ]
         if validation_text:
             result_lines.append(validation_text)
