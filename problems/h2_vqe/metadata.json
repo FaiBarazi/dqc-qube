@@ -8,6 +8,5 @@
   "allowed_gates": "",
   "tags": ["vqe"],
   "mqt_bench_key": "",
-  "evaluation_type": "statevector",
   "evaluation_target": "custom"
 }

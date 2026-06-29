@@ -7,6 +7,5 @@
   "fidelity_threshold": 0.999,
   "allowed_gates": "",
   "mqt_bench_key": "qft",
-  "evaluation_type": "statevector",
   "evaluation_target": "custom"
 }
