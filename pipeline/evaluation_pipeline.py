@@ -3,6 +3,8 @@ import importlib
 
 from qiskit import QuantumCircuit, qasm3
 from qiskit.quantum_info import Statevector, state_fidelity
+from mqt.bench import get_benchmark  
+from mqt.bench.benchmark_generation import BenchmarkLevel  
 
 
 def load_circuit(qasm_file: str) -> QuantumCircuit:
@@ -65,8 +67,6 @@ def get_reference_circuit(
             raise ValueError(
                 "mqt_bench_key must be set in metadata when evaluation_target is 'mqt'"
             )
-        from mqt.bench import get_benchmark  # noqa: PLC0415
-        from mqt.bench.benchmark_generation import BenchmarkLevel  # noqa: PLC0415
 
         return get_benchmark(
             mqt_bench_key, BenchmarkLevel.ALG, circuit_size=num_qubits
