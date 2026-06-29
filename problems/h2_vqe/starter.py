@@ -5,33 +5,38 @@ from qiskit.quantum_info import SparsePauliOp, Statevector
 
 theta_1 = 0.0 # First param here. 
 theta_2 = 0.0 # Second param here. 
+class Solve:
+    def __init__(self, angles: list):
+        assert len(angles) == 2
+        for angle in angles:
+            assert -2*np.pi <= angle <= 2*np.pi
 
-def hamiltonian():
-    """
-    Define the Hamiltonian. Construct and return the A sparse Pauli matrix 
-    representing the H2 molecule.
-    Note: Qiskit uses little-endian qubit ordering (Qubit 1 (tensor) Qubit 0).
-    """
-    # Your code here.
-    
-    pass
+        self.theta_1 = angles[0]
+        self.theta_2 = angles[1]
 
-def ansatz(theta_1, theta_2):
-    """
-    Ansatz preparation. Construct and return the 2-qubit parameterized circuit
-    """
-    qc = QuantumCircuit(2)
-    # Your code here.
-    return qc
+    def hamiltonians(self):
+        """
+        Define the Hamiltonian. Construct and return the A sparse Pauli matrix 
+        representing the H2 molecule.
+        Note: Qiskit uses little-endian qubit ordering (Qubit 1 (tensor) Qubit 0).
+        """
+        # Your code here.
+        
+        pass
 
-def expectation_value(theta_1, theta_2):
-    """
-    Return the expectation value <(θ)Ψ|H|Ψ(θ)>. 
-    """
+    def ansatz(self):
+        """
+        Ansatz preparation. Construct and return the 2-qubit parameterized circuit
+        """
+        qc = QuantumCircuit(2)
+        # Your code here.
+        return qc
 
-def solve(theta_1, theta_2)-> float:
-    """
-    Return the expectation value given the 2 params theta_1 and theta_2
-    """
-    pass
+    def expectation_value(self, theta_1, theta_2):
+        """
+        Return the expectation value <(θ)Ψ|H|Ψ(θ)>. 
+        """
 
+if __name__ == "__main__":
+    angles = [] #instantaite the 2 angles/params here. 
+    Solve(angles)
