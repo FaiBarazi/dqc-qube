@@ -14,3 +14,8 @@ $H=−1.052(I \otimes I)+0.398(Z \otimes I)−0.398(I \otimes Z)−0.011(Z \otim
 - Construct the ansatz using 2 angles, 2 Y Rotation Gates and a CNOT gate in the `ansatz`fucntion.  
 - Calculate the expectation value in the `expectation_value` function. 
 - Use exactly 2 qubits.
+
+## Constraints
+- The angles, theta, are constrained by the lower and upper bound: `-2 * pi <= θ <= 2 * pi`
+- Use only 2 parameters, $\theta_{0} and \theta_{1}$
+
