@@ -12,6 +12,7 @@ import markdown
 import plotly.graph_objects as go
 
 from pipeline.converters.qiskit_converter import ConversionError, source_to_circuit
+from pipeline.converters.sandbox import EntryPointConfig
 from pipeline.evaluation_pipeline import compute_fidelity, evolve_state, get_reference_circuit, get_reference_statevector
 from pipeline.benchmark_pipeline import benchmark_metrics
 
@@ -68,6 +69,31 @@ def load_problem_tests(problem_name: str):
         return None
     except Exception:
         return None
+
+
+def get_entry_point_config(metadata: dict) -> EntryPointConfig:
+    """Extract entry point configuration from problem metadata.
+    
+    If no entry_point field exists, returns default config (function mode, name="solve").
+    """
+    entry_point_data = metadata.get("entry_point")
+    if entry_point_data is None:
+        return EntryPointConfig(mode="function", name="solve")
+    
+    # Parse the entry_point config from metadata
+    mode = entry_point_data["mode"]
+    name = entry_point_data["name"]
+    method_name = entry_point_data.get("method_name","")
+    args = entry_point_data.get("args", [])
+    kwargs = entry_point_data.get("kwargs", {})
+    
+    return EntryPointConfig(
+        mode=mode,
+        name=name,
+        method_name=method_name,
+        args=args,
+        kwargs=kwargs,
+    )
 
 
 app_ui = ui.page_fluid(
@@ -326,9 +352,10 @@ def server(input, output, session):
             return
 
         meta = current_metadata()
+        entry_point_config = get_entry_point_config(meta)
 
         try:
-            circuit = source_to_circuit(code)
+            circuit = source_to_circuit(code, entry_point_config=entry_point_config)
             ref_circuit = get_reference_circuit(current_problem(), meta, circuit.num_qubits)
             result = benchmark_metrics(ref_circuit, circuit)
             _benchmark_result.set(result)
@@ -342,8 +369,11 @@ def server(input, output, session):
         if not code or not code.strip():
             return "Enter Python code in the editor and click Run code."
 
+        meta = current_metadata()
+        entry_point_config = get_entry_point_config(meta)
+
         try:
-            circuit = source_to_circuit(code)
+            circuit = source_to_circuit(code, entry_point_config=entry_point_config)
         except ConversionError as exc:
             return f"ConversionError: {exc}"
         except Exception:

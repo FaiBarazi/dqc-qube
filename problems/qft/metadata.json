@@ -7,5 +7,9 @@
   "fidelity_threshold": 0.999,
   "allowed_gates": "",
   "mqt_bench_key": "qft",
-  "evaluation_target": "custom"
+  "evaluation_target": "custom",
+  "entry_point": {
+    "mode": "function",
+    "name": "solve"
+  }
 }
