@@ -8,5 +8,9 @@
   "allowed_gates": ["h", "cx"],
   "tags": ["state-preparation", "entanglement"],
   "mqt_bench_key": "",
-  "evaluation_target": "custom"
+  "evaluation_target": "custom",
+  "entry_point": {
+    "mode": "function",
+    "name": "solve"
+  }
 }

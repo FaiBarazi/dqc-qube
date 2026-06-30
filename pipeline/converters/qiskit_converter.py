@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import qiskit
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister, qasm3
@@ -11,7 +11,9 @@ from qiskit.circuit import Parameter, ParameterVector
 from pipeline.converters.errors import ConversionError
 from pipeline.converters.sandbox import (
     ALLOWED_IMPORT_ROOTS_QISKIT as ALLOWED_IMPORT_ROOTS,
+    EntryPointConfig,
     build_execution_namespace,
+    execute_submission,
     execute_submission_source,
 )
 
@@ -43,8 +45,25 @@ def export_circuit_to_qasm3(circuit: QuantumCircuit, output_path: Union[str, Pat
     return path
 
 
-def source_to_circuit(source: str, function_name: str = "solve") -> QuantumCircuit:
-    """Execute Qiskit source code and return the circuit produced by `function_name`."""
+def source_to_circuit(
+    source: str,
+    function_name: str = "solve",
+    entry_point_config: Optional[EntryPointConfig] = None,
+) -> QuantumCircuit:
+    """Execute Qiskit source code and return the circuit produced by the entry point.
+    
+    Args:
+        source: Qiskit Python source code
+        function_name: Name of the function to call (for backward compatibility)
+        entry_point_config: Configuration for entry point extraction.
+            If provided, takes precedence over function_name.
+    
+    Returns:
+        QuantumCircuit produced by the entry point
+    
+    Raises:
+        ConversionError: If circuit cannot be extracted or is not a QuantumCircuit
+    """
     namespace = build_execution_namespace(
         allowed_import_roots=ALLOWED_IMPORT_ROOTS,
         extra_symbols={
@@ -58,9 +77,9 @@ def source_to_circuit(source: str, function_name: str = "solve") -> QuantumCircu
     )
 
     try:
-        return execute_submission_source(
+        return execute_submission(
             source=source,
-            function_name=function_name,
+            entry_point_config=entry_point_config,
             namespace=namespace,
             type_validator=lambda value: isinstance(value, QuantumCircuit),
             type_error_message="Expected a qiskit.QuantumCircuit.",
@@ -70,9 +89,15 @@ def source_to_circuit(source: str, function_name: str = "solve") -> QuantumCircu
         raise ConversionError(str(exc)) from exc
 
 
-def source_to_qasm3(source: str, function_name: str = "solve") -> QiskitConversionResult:
+def source_to_qasm3(
+    source: str,
+    function_name: str = "solve",
+    entry_point_config: Optional[EntryPointConfig] = None,
+) -> QiskitConversionResult:
     """Execute Qiskit source code and convert the returned circuit to OpenQASM 3."""
-    circuit = source_to_circuit(source, function_name=function_name)
+    circuit = source_to_circuit(
+        source, function_name=function_name, entry_point_config=entry_point_config
+    )
     return QiskitConversionResult(circuit=circuit, qasm=circuit_to_qasm3(circuit))
 
 

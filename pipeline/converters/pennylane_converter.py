@@ -13,7 +13,9 @@ from pipeline.converters.errors import ConversionError
 from pipeline.converters.qiskit_converter import circuit_to_qasm3
 from pipeline.converters.sandbox import (
     ALLOWED_IMPORT_ROOTS_PENNYLANE as ALLOWED_IMPORT_ROOTS,
+    EntryPointConfig,
     build_execution_namespace,
+    execute_submission,
     execute_submission_source,
 )
 
@@ -148,12 +150,28 @@ def export_pennylane_to_qasm3(
     return path
 
 
-def pennylane_source_to_circuit(source: str, function_name: str = "solve") -> PennyLaneCircuit:
+def pennylane_source_to_circuit(
+    source: str,
+    function_name: str = "solve",
+    entry_point_config: Optional[EntryPointConfig] = None,
+) -> PennyLaneCircuit:
     """
     Execute PennyLane source code and return a QNode or QuantumScript.
 
     The submission can define `solve` as a QNode directly, or as a no-argument
     factory function that returns a QNode or QuantumScript.
+    
+    Args:
+        source: PennyLane Python source code
+        function_name: Name of the function to call (for backward compatibility)
+        entry_point_config: Configuration for entry point extraction.
+            If provided, takes precedence over function_name.
+    
+    Returns:
+        PennyLane QNode or QuantumScript
+    
+    Raises:
+        ConversionError: If circuit cannot be extracted or is not valid
     """
     namespace = build_execution_namespace(
         allowed_import_roots=ALLOWED_IMPORT_ROOTS,
@@ -164,14 +182,15 @@ def pennylane_source_to_circuit(source: str, function_name: str = "solve") -> Pe
     )
 
     try:
-        circuit = execute_submission_source(
+        circuit = execute_submission(
             source=source,
-            function_name=function_name,
+            entry_point_config=entry_point_config,
             namespace=namespace,
             type_validator=lambda value: isinstance(value, (QNode, QuantumScript)),
             type_error_message="Expected a PennyLane QNode or QuantumScript.",
             allow_direct_submission=True,
         )
+   
     except RuntimeError as exc:
         raise ConversionError(str(exc)) from exc
 
@@ -182,6 +201,7 @@ def pennylane_source_to_circuit(source: str, function_name: str = "solve") -> Pe
 def pennylane_source_to_qasm2(
     source: str,
     function_name: str = "solve",
+    entry_point_config: Optional[EntryPointConfig] = None,
     circuit_args: Optional[Sequence[Any]] = None,
     circuit_kwargs: Optional[dict[str, Any]] = None,
     wires=None,
@@ -190,7 +210,9 @@ def pennylane_source_to_qasm2(
     precision: Optional[int] = None,
 ) -> PennyLaneConversionResult:
     """Execute PennyLane source code and convert the circuit to OpenQASM 2.0."""
-    circuit = pennylane_source_to_circuit(source, function_name=function_name)
+    circuit = pennylane_source_to_circuit(
+        source, function_name=function_name, entry_point_config=entry_point_config
+    )
     qasm = pennylane_to_qasm2(
         circuit,
         circuit_args=circuit_args,
@@ -206,6 +228,7 @@ def pennylane_source_to_qasm2(
 def pennylane_source_to_qasm3(
     source: str,
     function_name: str = "solve",
+    entry_point_config: Optional[EntryPointConfig] = None,
     circuit_args: Optional[Sequence[Any]] = None,
     circuit_kwargs: Optional[dict[str, Any]] = None,
     wires=None,
@@ -214,7 +237,9 @@ def pennylane_source_to_qasm3(
     precision: Optional[int] = None,
 ) -> PennyLaneConversionResult:
     """Execute PennyLane source code and convert the circuit to OpenQASM 3."""
-    circuit = pennylane_source_to_circuit(source, function_name=function_name)
+    circuit = pennylane_source_to_circuit(
+        source, function_name=function_name, entry_point_config=entry_point_config
+    )
     qasm = pennylane_to_qasm3(
         circuit,
         circuit_args=circuit_args,

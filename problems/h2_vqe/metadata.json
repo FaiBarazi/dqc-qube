@@ -8,5 +8,12 @@
   "allowed_gates": "",
   "tags": ["vqe"],
   "mqt_bench_key": "",
-  "evaluation_target": "custom"
+  "evaluation_target": "custom",
+  "entry_point": {
+    "mode": "class_method",
+    "name": "Solve",
+    "method_name": "ansatz",
+    "args": [[0.0, 0.0]],
+    "kwargs": {}
+  }
 }
