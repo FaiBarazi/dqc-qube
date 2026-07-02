@@ -2,9 +2,6 @@ import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
-
-theta_1 = 0.0 # First param here. 
-theta_2 = 0.0 # Second param here. 
 class Solve:
     def __init__(self, angles: list):
         assert len(angles) == 2
@@ -36,7 +33,3 @@ class Solve:
         """
         Return the expectation value <(θ)Ψ|H|Ψ(θ)>. 
         """
-
-if __name__ == "__main__":
-    angles = [] #instantaite the 2 angles/params here. 
-    Solve(angles)

@@ -11,7 +11,7 @@ $H=−1.052(I \otimes I)+0.398(Z \otimes I)−0.398(I \otimes Z)−0.011(Z \otim
 ## Requirements
 
 - Construct the Hamiltonian using the mapping above in the `hamiltonian` function. 
-- Construct the ansatz using 2 angles, 2 Y Rotation Gates and a CNOT gate in the `ansatz`fucntion.  
+- Construct the ansatz using 2 angles, 2 Y Rotation Gates and a CNOT gate in the `ansatz`function.  
 - Calculate the expectation value in the `expectation_value` function. 
 - Use exactly 2 qubits.
 
