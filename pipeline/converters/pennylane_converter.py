@@ -173,6 +173,7 @@ def pennylane_source_to_circuit(
     Raises:
         ConversionError: If circuit cannot be extracted or is not valid
     """
+    config = entry_point_config or EntryPointConfig(mode="function", name=function_name)
     namespace = build_execution_namespace(
         allowed_import_roots=ALLOWED_IMPORT_ROOTS,
         extra_symbols={
@@ -184,7 +185,7 @@ def pennylane_source_to_circuit(
     try:
         circuit = execute_submission(
             source=source,
-            entry_point_config=entry_point_config,
+            entry_point_config=config,
             namespace=namespace,
             type_validator=lambda value: isinstance(value, (QNode, QuantumScript)),
             type_error_message="Expected a PennyLane QNode or QuantumScript.",
@@ -259,5 +260,4 @@ def _ensure_pennylane_circuit(circuit: Any) -> None:
 
 def _is_pennylane_circuit(value: Any) -> bool:
     return isinstance(value, (QNode, QuantumScript))
-
 

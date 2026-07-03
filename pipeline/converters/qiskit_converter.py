@@ -64,6 +64,7 @@ def source_to_circuit(
     Raises:
         ConversionError: If circuit cannot be extracted or is not a QuantumCircuit
     """
+    config = entry_point_config or EntryPointConfig(mode="function", name=function_name)
     namespace = build_execution_namespace(
         allowed_import_roots=ALLOWED_IMPORT_ROOTS,
         extra_symbols={
@@ -79,7 +80,7 @@ def source_to_circuit(
     try:
         return execute_submission(
             source=source,
-            entry_point_config=entry_point_config,
+            entry_point_config=config,
             namespace=namespace,
             type_validator=lambda value: isinstance(value, QuantumCircuit),
             type_error_message="Expected a qiskit.QuantumCircuit.",
@@ -104,4 +105,3 @@ def source_to_qasm3(
 def _ensure_quantum_circuit(circuit: Any) -> None:
     if not isinstance(circuit, QuantumCircuit):
         raise ConversionError("Expected a qiskit.QuantumCircuit.")
-
