@@ -10,10 +10,18 @@ import os
 from pathlib import Path
 import markdown
 import plotly.graph_objects as go
+import qiskit
+from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
+from qiskit.circuit import Parameter, ParameterVector
+from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from pipeline.converters.qiskit_converter import ConversionError, source_to_circuit
-from pipeline.converters.sandbox import EntryPointConfig
-from pipeline.evaluation_pipeline import compute_fidelity, evolve_state, get_reference_circuit, get_reference_statevector
+from pipeline.converters.sandbox import (
+    ALLOWED_IMPORT_ROOTS_QISKIT,
+    EntryPointConfig,
+    build_execution_namespace,
+)
+from pipeline.evaluation_pipeline import get_reference_circuit
 from pipeline.benchmark_pipeline import benchmark_metrics
 
 
@@ -94,6 +102,96 @@ def get_entry_point_config(metadata: dict) -> EntryPointConfig:
         args=args,
         kwargs=kwargs,
     )
+
+
+def source_to_entry_point(source: str, entry_point_config: EntryPointConfig):
+    """Execute Qiskit source and return the configured entry point object."""
+    namespace = build_execution_namespace(
+        allowed_import_roots=ALLOWED_IMPORT_ROOTS_QISKIT,
+        extra_symbols={
+            "ClassicalRegister": ClassicalRegister,
+            "Parameter": Parameter,
+            "ParameterVector": ParameterVector,
+            "QuantumCircuit": QuantumCircuit,
+            "QuantumRegister": QuantumRegister,
+            "SparsePauliOp": SparsePauliOp,
+            "Statevector": Statevector,
+            "qiskit": qiskit,
+        },
+    )
+
+    try:
+        exec(compile(source, "<submission>", "exec"), namespace)
+    except Exception as exc:
+        raise ConversionError(f"Could not execute submission source: {exc}") from exc
+
+    entry_point = namespace.get(entry_point_config.name)
+    if entry_point is None:
+        raise ConversionError(
+            f"Submission must define a callable '{entry_point_config.name}'"
+        )
+    if not callable(entry_point):
+        raise ConversionError(
+            f"Submission entry point '{entry_point_config.name}' is not callable"
+        )
+
+    return entry_point
+
+
+def get_validation_target(problem_tests) -> str:
+    return getattr(problem_tests, "VALIDATION_TARGET", "circuit")
+
+
+def format_validation_key(key: str) -> str:
+    return key.replace("_", " ").capitalize()
+
+
+def format_validation_scalar(key: str, value) -> str:
+    if isinstance(value, bool):
+        return str(value)
+    if isinstance(value, float):
+        if "fidelity" in key:
+            return f"{value:.6f}"
+        if "delta" in key or "threshold" in key:
+            return f"{value:.3e}"
+        return f"{value:.12f}"
+    return str(value)
+
+
+def format_validation_field(key: str, value, indent: int = 0) -> list[str]:
+    prefix = "  " * indent
+    label = format_validation_key(key)
+
+    if isinstance(value, dict):
+        lines = [f"{prefix}{label}:"]
+        for nested_key, nested_value in value.items():
+            lines.extend(
+                format_validation_field(nested_key, nested_value, indent + 1)
+            )
+        return lines
+
+    if isinstance(value, (list, tuple)):
+        display_value = ", ".join(str(item) for item in value) if value else "None"
+        return [f"{prefix}{label}: {display_value}"]
+
+    return [f"{prefix}{label}: {format_validation_scalar(key, value)}"]
+
+
+def format_validation_result(validation: dict) -> str:
+    if not isinstance(validation, dict):
+        return f"Validation returned unexpected result: {validation}"
+
+    lines = [
+        f"Validation: {validation.get('message', 'n/a')}",
+        f"Passed: {validation.get('passed', False)}",
+    ]
+
+    for key, value in validation.items():
+        if key in {"message", "passed"}:
+            continue
+        lines.extend(format_validation_field(key, value))
+
+    return "\n".join(lines)
 
 
 app_ui = ui.page_fluid(
@@ -371,6 +469,31 @@ def server(input, output, session):
 
         meta = current_metadata()
         entry_point_config = get_entry_point_config(meta)
+        problem_tests = load_problem_tests(current_problem())
+        if problem_tests is None:
+            return "Could not load validation tests for this problem."
+
+        validation_target = get_validation_target(problem_tests)
+        if validation_target == "entry_point":
+            try:
+                entry_point = source_to_entry_point(code, entry_point_config)
+            except ConversionError as exc:
+                return f"ConversionError: {exc}"
+            except Exception:
+                return traceback.format_exc()
+
+            try:
+                validation = problem_tests.validate(entry_point)
+            except Exception as exc:
+                return f"Could not validate solution: {exc}"
+
+            return "\n".join(
+                [
+                    "Entry point loaded successfully.",
+                    f"Entry point: {entry_point_config.name}",
+                    format_validation_result(validation),
+                ]
+            )
 
         try:
             circuit = source_to_circuit(code, entry_point_config=entry_point_config)
@@ -380,28 +503,15 @@ def server(input, output, session):
             return traceback.format_exc()
 
         try:
-            output_state = evolve_state(circuit)
-        except Exception as exc:
-            return f"Could not simulate circuit output: {exc}"
-
-        problem_tests = load_problem_tests(current_problem())
-        meta = current_metadata()
-        try:
             validation = problem_tests.validate(circuit)
-            validation_text = (
-                f"\nValidation: {validation.get('message', 'n/a')}"
-                f"\nPassed: {validation.get('passed', False)}"
-                f"\nReported fidelity: {validation.get('fidelity', 0.0):.6f}"
-            )
         except Exception as exc:
-            validation_text = f"\nCould not validate solution: {exc}"
+            return f"Could not validate solution: {exc}"
 
         result_lines = [
             "Circuit built successfully.",
             f"Qubits: {circuit.num_qubits}",
+            format_validation_result(validation),
         ]
-        if validation_text:
-            result_lines.append(validation_text)
 
         return "\n".join(result_lines)
 
@@ -499,4 +609,3 @@ def server(input, output, session):
 
 
 app = App(app_ui, server, static_assets=None)
-
