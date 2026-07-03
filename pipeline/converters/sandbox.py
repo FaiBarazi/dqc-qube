@@ -125,7 +125,7 @@ def execute_submission(
     Raises:
         RuntimeError: If execution fails, entry point not found, or type validation fails
     """
-    config = entry_point_config
+    config = entry_point_config or DEFAULT_ENTRY_POINT
 
     try:
         exec(compile(source, "<submission>", "exec"), namespace)
@@ -227,4 +227,3 @@ def execute_submission_source(
         type_error_message=type_error_message,
         allow_direct_submission=allow_direct_submission,
     )
-
