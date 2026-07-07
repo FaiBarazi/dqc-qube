@@ -106,7 +106,7 @@ def execute_submission(
     Execute user code and extract result based on entry point configuration.
 
     Supports three modes:
-    - function: Call the named function with no arguments
+    - function: Call the named function with configured args/kwargs
     - class_method: Instantiate the named class, then call the specified method
     - direct: Return the named object directly (must pass type validation)
 
@@ -152,7 +152,7 @@ def execute_submission(
 
     if config.mode == "function":
         try:
-            result = entry_point()
+            result = entry_point(*config.args, **config.kwargs)
         except Exception as exc:
             raise RuntimeError(f"`{config.name}` failed while building the circuit: {exc}") from exc
 
