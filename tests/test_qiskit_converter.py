@@ -8,6 +8,7 @@ from pipeline.converters.qiskit_converter import (
     source_to_circuit,
     source_to_qasm3,
 )
+from pipeline.converters.sandbox import EntryPointConfig
 
 
 def test_circuit_to_qasm3_exports_openqasm3():
@@ -52,6 +53,27 @@ def solve():
     assert len(circuit.data) == 2
 
 
+def test_source_to_circuit_passes_function_entry_point_args():
+    source = """
+from qiskit import QuantumCircuit
+
+
+def solve(num_encoding_qubits, num_ancilla_qubits):
+    return QuantumCircuit(num_encoding_qubits + num_ancilla_qubits)
+"""
+
+    circuit = source_to_circuit(
+        source,
+        entry_point_config=EntryPointConfig(
+            mode="function",
+            name="solve",
+            args=[7, 6],
+        ),
+    )
+
+    assert circuit.num_qubits == 13
+
+
 def test_source_to_qasm3_returns_circuit_and_qasm():
     source = """
 from qiskit import QuantumCircuit
@@ -83,4 +105,3 @@ def solve():
 
     with pytest.raises(ConversionError, match="QuantumCircuit"):
         source_to_circuit(source)
-
