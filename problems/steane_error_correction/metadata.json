@@ -1,0 +1,18 @@
+{
+  "id": "steane_error_correction",
+  "title": "Steane Error Correction",
+  "difficulty": "medium",
+  "framework": "qiskit",
+  "qubits": 13,
+  "fidelity_threshold": 0.999,
+  "allowed_gates": "",
+  "tags": ["error-correction", "steane-code"],
+  "mqt_bench_key": "",
+  "evaluation_target": "custom",
+  "entry_point": {
+    "mode": "function",
+    "name": "solve",
+    "args": [7, 6],
+    "kwargs": {}
+  }
+}
