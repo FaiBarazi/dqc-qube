@@ -24,9 +24,9 @@ def get_reference_circuit() -> QuantumCircuit:
     qc.cx(ancilla[2], [data[i] for i in (6,4,3,0)])
 
     # Phase flip error
-    qc.cx(ancilla[3], [data[i] for i in range(1,5)])
-    qc.cx(ancilla[4], [data[i] for i in (5,3,2,0)])
-    qc.cx(ancilla[5], [data[i] for i in (6,4,3,0)])
+    qc.cz(ancilla[3], [data[i] for i in range(1,5)])
+    qc.cz(ancilla[4], [data[i] for i in (5,3,2,0)])
+    qc.cz(ancilla[5], [data[i] for i in (6,4,3,0)])
 
     ## End of sandwich
     qc.h(ancilla[i] for i in range(0,6))
