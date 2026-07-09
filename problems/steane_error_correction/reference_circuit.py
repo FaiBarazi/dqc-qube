@@ -14,22 +14,23 @@ def get_reference_circuit() -> QuantumCircuit:
     qc.cx(data[6], [data[i] for i in (3,1,0)])
     qc.cx(data[5], [data[i] for i in (3,2,0)])
     qc.cx(data[4], [data[i] for i in (3,2,1)])
-
+    qc.barrier()
     # Error Detection
     ## sandwiched between 2 Hadamards.
-    qc.h(ancilla[i] for i in range(0,6))
-    # Bit flip error
+    qc.h([ancilla[i] for i in range(0,6)])
+    # phase flip
     qc.cx(ancilla[0], [data[i] for i in range(1,5)])
     qc.cx(ancilla[1], [data[i] for i in (5,3,2,0)])
-    qc.cx(ancilla[2], [data[i] for i in (6,4,3,0)])
+    qc.cx(ancilla[2], [data[i] for i in (6,3,1,0)])
 
-    # Phase flip error
+    qc.barrier()
+    # bit flip error
     qc.cz(ancilla[3], [data[i] for i in range(1,5)])
     qc.cz(ancilla[4], [data[i] for i in (5,3,2,0)])
-    qc.cz(ancilla[5], [data[i] for i in (6,4,3,0)])
+    qc.cz(ancilla[5], [data[i] for i in (6,3,1,0)])
 
     ## End of sandwich
-    qc.h(ancilla[i] for i in range(0,6))
+    qc.h([ancilla[i] for i in range(0,6)])
 
     qc.barrier()
 
