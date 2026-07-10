@@ -15,6 +15,4 @@ def solve(num_encoding_qubits, num_ancilla_qubits) -> QuantumCircuit:
     # 2.Error Detection Code here.
  
 
-    #3. Measure Syndrome here.
-
     return qc
