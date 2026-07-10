@@ -1,7 +1,7 @@
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 
 def get_reference_circuit() -> QuantumCircuit:
-    # For the steane code, we need 
+    # For the steane code, we need 7 qubits to encode logical qubit.
     data = QuantumRegister(7, 'data')
     ancilla = QuantumRegister(6, 'ancilla')
     # Used to store the measurments to get the syndrome.
