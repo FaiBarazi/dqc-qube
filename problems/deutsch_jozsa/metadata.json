@@ -1,0 +1,16 @@
+{
+  "id": "deutsch_jozsa",
+  "title": "Deutsch-Jozsa Algorithm",
+  "difficulty": "medium",
+  "framework": "qiskit",
+  "qubits": 5,
+  "fidelity_threshold": 0.999,
+  "allowed_gates": ["x", "h", "cx"],
+  "tags": ["algorithm", "oracle", "deutsch-jozsa"],
+  "mqt_bench_key": "dj",
+  "evaluation_target": "custom",
+  "entry_point": {
+    "mode": "function",
+    "name": "solve"
+  }
+}
