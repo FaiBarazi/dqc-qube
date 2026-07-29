@@ -39,4 +39,5 @@ def solve() -> QuantumCircuit:
 | `bell_state`    | Bell State Preparation       | easy       | 2      | state-preparation, entanglement               |
 | `deutsch_jozsa` | Deutsch-Jozsa Algorithm      | medium     | 5      | algorithm, oracle, deutsch-jozsa               |
 | `qft`           | Quantum Fourier Transform    | easy       | 5      | qft, state-preparation                        |
+| `teleportation` | Quantum Teleportation        | medium     | 3      | algorithm, entanglement, teleportation        |
 | `vqe_real_amp`  | VQE Real Amplitudes Ansatz   | medium     | 5      | variational, ansatz, vqe, real-amplitudes     |
