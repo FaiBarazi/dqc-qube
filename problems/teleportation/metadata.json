@@ -1,0 +1,16 @@
+{
+  "id": "teleportation",
+  "title": "Quantum Teleportation",
+  "difficulty": "medium",
+  "framework": "qiskit",
+  "qubits": 3,
+  "fidelity_threshold": 0.999,
+  "allowed_gates": ["h", "cx", "measure", "if_else", "x", "z"],
+  "tags": ["algorithm", "entanglement", "teleportation"],
+  "mqt_bench_key": "",
+  "evaluation_target": "custom",
+  "entry_point": {
+    "mode": "function",
+    "name": "solve"
+  }
+}
