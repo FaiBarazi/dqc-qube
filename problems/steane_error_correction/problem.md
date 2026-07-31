@@ -6,4 +6,3 @@ $∣0⟩_L=1/\sqrt{8}$(∣0000000⟩+∣1010101⟩+∣0110011⟩+∣1100110⟩+�
 - Implement a function named solve.
 - Implement only the encoding and the Error detection part of the code.
 - Return a qiskit.QuantumCircuit.
-- Do not add measurements.
