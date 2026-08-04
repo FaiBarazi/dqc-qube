@@ -1,4 +1,4 @@
-# $H_2$ Ground State using the Variational Quantum Eigensolver (VQE)
+### $H_2$ Ground State using the Variational Quantum Eigensolver (VQE)
 
 In this problem, we will use a two-qubit system to estimate the ground-state
 energy of an $H_2$ molecule.
@@ -23,7 +23,7 @@ H ={}& -1.052(I \otimes I)
 \end{aligned}
 $$
 
-## Requirements
+### Requirements
 
 - Construct the Hamiltonian using the mapping above in the `hamiltonian` function.
 - Construct the ansatz using two angles, two Y-rotation gates, and a CNOT gate
@@ -31,7 +31,7 @@ $$
 - Calculate the expectation value in the `expectation_value` function.
 - Use exactly 2 qubits.
 
-## Constraints
+### Constraints
 
 - Each angle is constrained by $-2\pi \leq \theta_i \leq 2\pi$.
 - Use only two parameters, $\theta_0$ and $\theta_1$.

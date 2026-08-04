@@ -1,4 +1,4 @@
-# Quantum Fourier Transform (QFT) State Preparation
+### Quantum Fourier Transform (QFT) State Preparation
 
 Create a five-qubit circuit that prepares the Quantum Fourier Transform of
 the computational basis state $\lvert 13 \rangle$ (that is,
@@ -10,7 +10,7 @@ $$
 \sum_{k=0}^{31} e^{2\pi i k \cdot 13 / 32}\lvert k \rangle.
 $$
 
-## Requirements
+### Requirements
 
 - Implement a function named `solve`.
 - Return a `qiskit.QuantumCircuit`.
@@ -19,7 +19,7 @@ $$
 - Your output state must have fidelity of at least `0.999` against the target
   $\operatorname{QFT}\lvert 13 \rangle$ state.
 
-## Starter Signature
+### Starter Signature
 
 ```python
 from qiskit import QuantumCircuit
