@@ -1,4 +1,4 @@
-### Deutsch-Jozsa Algorithm
+**Deutsch-Jozsa Algorithm**
 
 Build the Deutsch-Jozsa circuit for a balanced parity oracle with four input
 qubits. The oracle acts on input qubits `q0` through `q3` and the output
@@ -21,7 +21,7 @@ $$
 \frac{\lvert 01111 \rangle - \lvert 11111 \rangle}{\sqrt{2}}.
 $$
 
-## Requirements
+**Requirements**
 
 - Implement a function named `solve`.
 - Return a `qiskit.QuantumCircuit`.
@@ -30,7 +30,7 @@ $$
 - Your output state must have fidelity of at least `0.999` against the
   benchmark circuit.
 
-## Starter Signature
+**Starter Signature**
 
 ```python
 from qiskit import QuantumCircuit

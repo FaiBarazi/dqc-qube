@@ -1,4 +1,4 @@
-### Bell State Preparation
+**Bell State Preparation**
 
 Create a two-qubit circuit that prepares the Bell state:
 
@@ -7,7 +7,7 @@ $$
 = \frac{\lvert 00 \rangle + \lvert 11 \rangle}{\sqrt{2}}.
 $$
 
-### Requirements
+**Requirements**
 
 - Implement a function named `solve`.
 - Return a `qiskit.QuantumCircuit`.
@@ -16,7 +16,7 @@ $$
 - Your output state must have fidelity of at least `0.999` against the target
   state.
 
-### Starter Signature
+**Starter Signature**
 
 ```python
 from qiskit import QuantumCircuit
