@@ -1,4 +1,4 @@
-# Quantum Teleportation
+### Quantum Teleportation
 
 Build a three-qubit circuit that teleports the state
 
@@ -20,7 +20,7 @@ Implement the complete protocol:
 5. Use those classical results to apply the appropriate Pauli corrections to
    `q2`.
 
-## Requirements
+### Requirements
 
 - Implement a function named `solve`.
 - Return a `qiskit.QuantumCircuit`.
@@ -36,7 +36,7 @@ Because teleportation includes measurement, the complete three-qubit circuit
 does not have one final statevector. The evaluator follows every measurement
 branch and verifies the reduced state of the target qubit, `q2`.
 
-## Starter Signature
+### Starter Signature
 
 ```python
 from qiskit import QuantumCircuit

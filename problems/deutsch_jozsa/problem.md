@@ -1,4 +1,4 @@
-# Deutsch-Jozsa Algorithm
+### Deutsch-Jozsa Algorithm
 
 Build the Deutsch-Jozsa circuit for a balanced parity oracle with four input
 qubits. The oracle acts on input qubits `q0` through `q3` and the output
