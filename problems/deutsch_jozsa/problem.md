@@ -4,22 +4,22 @@ Build the Deutsch-Jozsa circuit for a balanced parity oracle with four input
 qubits. The oracle acts on input qubits `q0` through `q3` and the output
 qubit `q4`:
 
-```text
-f(x0, x1, x2, x3) = x0 XOR x1 XOR x2 XOR x3
-```
+$$
+f(x_0, x_1, x_2, x_3) = x_0 \oplus x_1 \oplus x_2 \oplus x_3.
+$$
 
-Apply the complete algorithm: prepare the output qubit in `|1>`, create the
-required superposition, apply the oracle, and finish with Hadamard gates on
-the input register. Do not measure the circuit; it is evaluated as a
+Apply the complete algorithm: prepare the output qubit in $\lvert 1 \rangle$,
+create the required superposition, apply the oracle, and finish with Hadamard
+gates on the input register. Do not measure the circuit; it is evaluated as a
 statevector.
 
-For this balanced oracle, the four input qubits finish in `|1111>` and the
-output qubit remains in `|->`. In Qiskit's basis-state ordering, the complete
-target state is:
+For this balanced oracle, the four input qubits finish in
+$\lvert 1111 \rangle$ and the output qubit remains in $\lvert - \rangle$.
+In Qiskit's basis-state ordering, the complete target state is:
 
-```text
-(|01111> - |11111>) / sqrt(2)
-```
+$$
+\frac{\lvert 01111 \rangle - \lvert 11111 \rangle}{\sqrt{2}}.
+$$
 
 ## Requirements
 

@@ -2,9 +2,10 @@
 
 Create a two-qubit circuit that prepares the Bell state:
 
-```text
-(|00> + |11>) / sqrt(2)
-```
+$$
+\lvert \Phi^+ \rangle
+= \frac{\lvert 00 \rangle + \lvert 11 \rangle}{\sqrt{2}}.
+$$
 
 ## Requirements
 
@@ -24,4 +25,3 @@ def solve() -> QuantumCircuit:
     circuit = QuantumCircuit(2)
     return circuit
 ```
-

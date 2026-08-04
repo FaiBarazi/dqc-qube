@@ -25,6 +25,70 @@ from pipeline.evaluation_pipeline import get_reference_circuit
 from pipeline.benchmark_pipeline import benchmark_metrics
 
 
+MATHJAX_URL = "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"
+MATHJAX_CONFIG = r"""
+window.MathJax = {
+    tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true
+    },
+    options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    startup: {
+        typeset: false
+    }
+};
+"""
+MATHJAX_SHINY_HANDLER = r"""
+(function () {
+    const outputId = 'problem_description';
+
+    function mathJaxIsReady() {
+        return window.MathJax &&
+            window.MathJax.startup &&
+            window.MathJax.startup.promise &&
+            typeof window.MathJax.typesetPromise === 'function';
+    }
+
+    function typesetProblemDescription() {
+        const container = document.getElementById(outputId);
+        if (!container || !mathJaxIsReady()) {
+            return;
+        }
+
+        window.MathJax.startup.promise
+            .then(function () {
+                return window.MathJax.typesetPromise([container]);
+            })
+            .catch(function (error) {
+                console.error('MathJax could not render the problem description.', error);
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        window.jQuery(document).on('shiny:value', function (event) {
+            if (event.name !== outputId) {
+                return;
+            }
+
+            const container = document.getElementById(outputId);
+            if (
+                container &&
+                window.MathJax &&
+                typeof window.MathJax.typesetClear === 'function'
+            ) {
+                window.MathJax.typesetClear([container]);
+            }
+
+            window.setTimeout(typesetProblemDescription, 0);
+        });
+    });
+})();
+"""
+
+
 def get_problems():
     """Discover available problems from the problems directory."""
     problems_dir = Path(__file__).parent / "problems"
@@ -44,6 +108,11 @@ def get_problem_description(problem_name: str) -> str:
     if problem_path.exists():
         return problem_path.read_text()
     return "Problem description not found."
+
+
+def render_problem_markdown(md_text: str) -> str:
+    """Convert problem Markdown to HTML while preserving MathJax delimiters."""
+    return markdown.markdown(md_text, extensions=["extra", "codehilite"])
 
 
 def get_starter_code(problem_name: str) -> str:
@@ -196,6 +265,11 @@ def format_validation_result(validation: dict) -> str:
 
 app_ui = ui.page_fluid(
     ui.head_content(
+        # MathJax configuration must be defined before the deferred library loads.
+        ui.tags.script(MATHJAX_CONFIG),
+        ui.tags.script(src=MATHJAX_URL, defer_=""),
+        # Problem descriptions are reactive, so typeset after every Shiny update.
+        ui.tags.script(MATHJAX_SHINY_HANDLER),
         # CodeMirror CSS
         ui.tags.link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css"),
         ui.tags.link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/eclipse.min.css"),
@@ -355,7 +429,7 @@ def server(input, output, session):
     @render.ui
     def problem_description():
         md_text = get_problem_description(current_problem())
-        html_content = markdown.markdown(md_text, extensions=['extra', 'codehilite'])
+        html_content = render_problem_markdown(md_text)
         # Wrap in styled div with markdown styling
         styled_html = f"""
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; line-height: 1.6; color: #333;">
