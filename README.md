@@ -1,14 +1,17 @@
 # dqc-qube
-
-> **Work in progress:** this repository is still being built. 
-
+This project is a quantum "leetcode" service targeted to quantum circuits developers. It runs as a web application in the browser, evaluates a submitted circuits output against a benchmark and as well provides metrics on number of 1 qubit gates, 2 qubit gates, circuit depth ..etc. 
 
 ## Current Capabilities
 
-- Load OpenQASM 3 circuit files using Qiskit
-- Simulate a circuit statevector
-- Compute fidelity between output and target states
-- Include a sample test for full-adder circuit definition in `pipeline/full_adder_alg_4.qasm`
+- 5 problem sets: 
+    - Simple bell state. 
+    - Deutsch Josza 
+    - H2 VQE
+    - Qunatum Fourier Transformation (QFT)
+    - Steane Error Correction (7 qubit)
+    - Teleportation
+- The evaluation can be done on functions and classes
+- Evaluation output based on Statevectors, Exceptation value and Galois Field.
 
 ## Getting Started
 
@@ -23,8 +26,24 @@ uv sync
 ```bash
 uv run pytest
 ```
+## Repo Structure
+- pipeline: Functions used in the benchmarking and evaluation.
+- problems: Problemsets as described below. 
+- app: The app is a 'shiny' dashboard app that runs the application. To run: `shiny run app.py`
+- run_server + dockerfiles:  Sepcific to running the service in a containarized environment.
+- uv (uv.lock + pyproject.toml): The project is managed through [uv](https://docs.astral.sh/uv/). 
 
-## Training Pipeline
+## Problems Structure
+Each of the problems in the problem folder has: 
+- metadata.json: includes information about the problems and the entry point to be evaluated, whether a function or a method of a class. 
+- problem.md: The description of the problem
+- reference_circuit: Benchmark circuit to compare against. 
+- starter: starter code displayed in the code area. 
+- tests: Runs the submitted circuit and evaluates the circuit against the benchmark based on coded evaluation criteria. the output is displayed in the web app. 
+
+**Note**: The evaulation criteria is not an absolute measure of the "correctness" of a circuit. It is a measure of how close a solution is to a reference circuit. 
+
+## Training Pipeline [WIP]
 [MQT predictor](https://pypi.org/project/mqt.predictor/) is used for best device prediction. The training is in 2 steps: 
 - Reinforcement Learning step, training for circuit specific compilers. The current available compilers are: QISKIT, TKET and BQSKIT. 
 - Machine Learning (Random Forest) That predicts a target (device) based on a circuit. 
