@@ -1,4 +1,4 @@
-### Steane Code Logical $\lvert 0 \rangle$ State Preparation
+**Steane Code Logical $\lvert 0 \rangle$ State Preparation**
 
 Create a seven-qubit circuit that prepares the logical zero state
 $\lvert 0 \rangle_L$ for the Steane $[7,1,3]$ quantum error-correction code.
@@ -17,7 +17,7 @@ $$
 \end{aligned}
 $$
 
-### Requirements
+**Requirements**
 
 - Implement a function named `solve`.
 - Implement only the encoding and error-detection parts of the code.
