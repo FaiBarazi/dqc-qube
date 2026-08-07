@@ -8,17 +8,15 @@ $$
 = \lvert + \rangle
 $$
 
-from Alice's message qubit, `q0`, to Bob's target qubit, `q2`. Qubit `q1`
-is Alice's half of the entangled pair.
+Source state  is at  `q0`, and a target is on `q2`. Qubit `q1` handles the ebit. 
 
 Implement the complete protocol:
 
 1. Prepare `q0` in $\lvert \psi \rangle$.
 2. Create a Bell pair between `q1` and `q2`.
-3. Apply Alice's Bell-basis operations to `q0` and `q1`.
+3. Apply source Bell-basis operations to `q0` and `q1`.
 4. Measure `q0` into `c0` and `q1` into `c1`.
-5. Use those classical results to apply the appropriate Pauli corrections to
-   `q2`.
+5. Use those classical results to apply the appropriate Pauli corrections to `q2`.
 
 **Requirements**
 
@@ -31,10 +29,6 @@ Implement the complete protocol:
   $\lvert \psi \rangle$ for every measurement outcome.
 - The target-qubit state must have an average fidelity of at least `0.999`
   against $\lvert \psi \rangle$.
-
-Because teleportation includes measurement, the complete three-qubit circuit
-does not have one final statevector. The evaluator follows every measurement
-branch and verifies the reduced state of the target qubit, `q2`.
 
 **Starter Signature**
 
