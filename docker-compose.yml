@@ -1,7 +1,8 @@
-version: '3.8'
-
 services:
   qube:
+    # bqskitrs 0.4.1 has no Linux ARM64 distribution. Use AMD64, which Docker
+    # Desktop can emulate on Apple Silicon.
+    platform: linux/amd64
     build: .
     ports:
       - "8000:8000"
