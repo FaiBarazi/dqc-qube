@@ -134,6 +134,17 @@ def get_problem_metadata(problem_name: str) -> dict:
     return {}
 
 
+def get_problem_choices() -> dict[str, str]:
+    """Map problem directory IDs to user-facing metadata titles."""
+    choices = {}
+    for problem_name in get_problems():
+        title = get_problem_metadata(problem_name).get("title")
+        choices[problem_name] = (
+            title.strip() if isinstance(title, str) and title.strip() else problem_name
+        )
+    return choices
+
+
 def load_problem_tests(problem_name: str):
     project_root = Path(__file__).parent
     if str(project_root) not in sys.path:
@@ -263,6 +274,9 @@ def format_validation_result(validation: dict) -> str:
     return "\n".join(lines)
 
 
+PROBLEM_CHOICES = get_problem_choices()
+
+
 app_ui = ui.page_fluid(
     ui.head_content(
         # MathJax configuration must be defined before the deferred library loads.
@@ -309,8 +323,8 @@ app_ui = ui.page_fluid(
                 ui.input_select(
                     "problem_selector",
                     "Select Problem:",
-                    {p: p for p in get_problems()},
-                    selected=get_problems()[0] if get_problems() else None,
+                    PROBLEM_CHOICES,
+                    selected=next(iter(PROBLEM_CHOICES), None),
                 ),
                 style="margin-bottom: 30px;",
             ),
